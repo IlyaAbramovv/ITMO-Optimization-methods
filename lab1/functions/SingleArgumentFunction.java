@@ -15,4 +15,8 @@ public abstract class SingleArgumentFunction implements Function {
     }
 
     abstract double makeOperation(double x);
+
+    public Function getFunction() {
+        return function;
+    }
 }

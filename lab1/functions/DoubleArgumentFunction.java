@@ -16,4 +16,12 @@ public abstract class DoubleArgumentFunction implements Function {
     }
 
     abstract double makeOperation(double x, double y);
+
+    public Function getFunction1() {
+        return function1;
+    }
+
+    public Function getFunction2() {
+        return function2;
+    }
 }

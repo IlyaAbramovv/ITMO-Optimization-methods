@@ -13,4 +13,8 @@ public class Const implements Function {
     public double evaluate(Map<String, Double> map) {
         return value;
     }
+
+    public double getValue() {
+        return value;
+    }
 }

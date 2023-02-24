@@ -18,4 +18,8 @@ public class Variable implements Function {
         }
         return 0;
     }
+
+    public String getValue() {
+        return value;
+    }
 }
