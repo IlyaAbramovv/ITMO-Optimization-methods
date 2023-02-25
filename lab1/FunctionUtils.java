@@ -7,32 +7,32 @@ import java.util.*;
 public class FunctionUtils {
     public static final double EPS = 1e-5;
     private static final double ALPHA = 1e-1;
-    private static final int COUNT_OF_ITERATIONS = 10000;
+    private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
 
-    public static List<Map<String, Double>> gradientDescent(Function function) {
+    public static Map<String, Double> gradientDescent(Function function) {
         List<String> variables = getAllVariables(function);
         Map<String, Double> vector = new HashMap<>();
-        for (int i = 0; i < variables.size(); i++) {
-            vector.put(variables.get(i), INITIAL_VALUE);
+        for (String variable : variables) {
+            vector.put(variable, INITIAL_VALUE);
         }
-        List<Map<String, Double>> result = new ArrayList<>();
-        result.add(new HashMap<>(vector));
-        int count = 0;
-        while (count < COUNT_OF_ITERATIONS) {
+        int countInterations = 0, countEvaluations = 0;
+        while (countInterations < MAX_COUNT_OF_ITERATIONS) {
             Map<String, Double> gradient = getGradient(function, vector);
+            countEvaluations += 1 + variables.size();
             double maxDiff = Integer.MAX_VALUE;
             for (var entry : gradient.entrySet()) {
                 maxDiff = Math.min(maxDiff, Math.abs(ALPHA * entry.getValue()));
                 vector.put(entry.getKey(), vector.get(entry.getKey()) - ALPHA * entry.getValue());
             }
-            result.add(new HashMap<>(vector));
+            countInterations++;
             if (maxDiff < EPS) {
                 break;
             }
-            count++;
         }
-        return result;
+        System.out.println("Count of iterations: " + countInterations);
+        System.out.println("Count of evaluations: " + countEvaluations);
+        return vector;
     }
 
     private static Map<String, Double> getGradient(Function function, Map<String, Double> vector) {
