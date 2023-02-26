@@ -3,15 +3,15 @@
 x^2
 Function function = new Pow(new Variable("x"), new Const(2.0));
 
-arctg(x) + exp(sin(x))
-Function function = new Add(new Arctg(new Variable("x")),
+arctan(x) + exp(sin(x))
+Function function = new Add(new Arctan(new Variable("x")),
         new Exp(new Sin(new Multiply(new Const(2.0),new Variable("x"))))
 );
 
-(x + 1)cos(4arctg(x))
+(x + 1)cos(4arctan(x))
 Function function = new Multiply(
         new Add(new Variable("x"), new Const(1.0)),
-        new Cos(new Multiply(new Const(4.0), new Arctg(new Variable("x"))))
+        new Cos(new Multiply(new Const(4.0), new Arctan(new Variable("x"))))
 );
 
 __________________________________________________________________________________________

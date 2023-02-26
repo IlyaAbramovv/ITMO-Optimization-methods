@@ -5,7 +5,7 @@ import lab1.functions.*;
 import java.util.*;
 
 public class FunctionUtils {
-    public static final double EPS = 1e-6;
+    public static final double EPS = 1e-7;
     private static final double ALPHA = 1e-1;
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
@@ -16,19 +16,20 @@ public class FunctionUtils {
         for (String variable : variables) {
             vector.put(variable, INITIAL_VALUE);
         }
-        int countInterations = 0, countEvaluations = 0;
+        double first = function.evaluate(vector), second;
+        int countInterations = 0, countEvaluations = 1;
         while (countInterations < MAX_COUNT_OF_ITERATIONS) {
             Map<String, Double> gradient = getGradient(function, vector);
-            countEvaluations += 1 + variables.size();
-            double maxDiff = Integer.MAX_VALUE;
             for (var entry : gradient.entrySet()) {
-                maxDiff = Math.min(maxDiff, Math.abs(ALPHA * entry.getValue()));
                 vector.put(entry.getKey(), vector.get(entry.getKey()) - ALPHA * entry.getValue());
             }
+            second = function.evaluate(vector);
             countInterations++;
-            if (maxDiff < EPS) {
+            countEvaluations += 1 + variables.size();
+            if (Math.abs(second - first) < EPS) {
                 break;
             }
+            first = second;
         }
         System.out.println("Count of iterations: " + countInterations);
         System.out.println("Count of evaluations: " + countEvaluations);
