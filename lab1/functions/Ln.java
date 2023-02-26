@@ -12,4 +12,9 @@ public class Ln extends SingleArgumentFunction {
         }
         return Math.log(x);
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Divide(function.differentiate(d), function);
+    }
 }

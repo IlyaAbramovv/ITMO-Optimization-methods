@@ -12,4 +12,9 @@ public class Tan extends SingleArgumentFunction {
         }
         return Math.tan(x);
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Divide(function.differentiate(d), new Pow(new Cos(function), new Const(2.0)));
+    }
 }

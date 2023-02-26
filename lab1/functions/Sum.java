@@ -12,4 +12,9 @@ public class Sum extends MultipleArgumentFunction {
     double makeOperation(List<Double> list) {
         return list.stream().reduce(0.0, Double::sum);
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Sum(functions.stream().map(function -> function.differentiate(d)).toList());
+    }
 }

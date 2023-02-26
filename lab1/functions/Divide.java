@@ -12,4 +12,10 @@ public class Divide extends DoubleArgumentFunction {
         }
         return x / y;
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Divide(new Subtract(new Multiply(function1.differentiate(d), function2), new Multiply(function2.differentiate(d), function1)),
+                new Pow(function2, new Const(2.0)));
+    }
 }

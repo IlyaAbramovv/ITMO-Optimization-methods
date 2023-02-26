@@ -9,4 +9,9 @@ public class Negate extends SingleArgumentFunction {
     double makeOperation(double x) {
         return -x;
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Negate(function.differentiate(d));
+    }
 }

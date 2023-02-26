@@ -19,6 +19,14 @@ public class Variable implements Function {
         return 0;
     }
 
+    @Override
+    public Function differentiate(String d) {
+        if (d.equals(value)) {
+            return new Const(1.0);
+        }
+        return new Const(0.0);
+    }
+
     public String getValue() {
         return value;
     }

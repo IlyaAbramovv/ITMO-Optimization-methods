@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class MultipleArgumentFunction implements Function {
-    private final List<Function> functions;
+    protected final List<Function> functions;
 
     public MultipleArgumentFunction(List<Function> functions) {
         this.functions = functions;

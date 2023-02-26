@@ -18,4 +18,9 @@ public class Log extends DoubleArgumentFunction {
         }
         return Math.log(y) / Math.log(x);
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Divide(new Ln(function2), new Ln(function1)).differentiate(d);
+    }
 }

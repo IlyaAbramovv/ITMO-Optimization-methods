@@ -3,7 +3,7 @@ package lab1.functions;
 import java.util.Map;
 
 public abstract class DoubleArgumentFunction implements Function {
-    private final Function function1, function2;
+    protected final Function function1, function2;
 
     public DoubleArgumentFunction(Function function1, Function function2) {
         this.function1 = function1;

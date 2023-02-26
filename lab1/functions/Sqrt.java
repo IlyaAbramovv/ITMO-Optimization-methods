@@ -12,4 +12,9 @@ public class Sqrt extends SingleArgumentFunction {
         }
         return Math.sqrt(x);
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Divide(function.differentiate(d), new Multiply(new Const(2.0), this));
+    }
 }

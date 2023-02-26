@@ -9,4 +9,9 @@ public class Cos extends SingleArgumentFunction {
     double makeOperation(double x) {
         return Math.cos(x);
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Multiply(new Negate(new Sin(function)), function.differentiate(d));
+    }
 }

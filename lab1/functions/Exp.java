@@ -9,4 +9,9 @@ public class Exp extends SingleArgumentFunction {
     double makeOperation(double x) {
         return Math.exp(x);
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Multiply(this, function.differentiate(d));
+    }
 }

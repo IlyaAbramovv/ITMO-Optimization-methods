@@ -3,7 +3,7 @@ package lab1.functions;
 import java.util.Map;
 
 public abstract class SingleArgumentFunction implements Function {
-    private final Function function;
+    protected final Function function;
 
     protected SingleArgumentFunction(Function function) {
         this.function = function;

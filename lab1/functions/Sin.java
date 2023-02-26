@@ -9,4 +9,9 @@ public class Sin extends SingleArgumentFunction {
     double makeOperation(double x) {
         return Math.sin(x);
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Multiply(new Cos(function), function.differentiate(d));
+    }
 }

@@ -14,6 +14,11 @@ public class Const implements Function {
         return value;
     }
 
+    @Override
+    public Function differentiate(String d) {
+        return new Const(0.0);
+    }
+
     public double getValue() {
         return value;
     }

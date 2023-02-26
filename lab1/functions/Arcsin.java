@@ -12,4 +12,9 @@ public class Arcsin extends SingleArgumentFunction {
         }
         return Math.asin(x);
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Divide(function.differentiate(d), new Sqrt(new Subtract(new Const(1.0), new Pow(function, new Const(2.0)))));
+    }
 }

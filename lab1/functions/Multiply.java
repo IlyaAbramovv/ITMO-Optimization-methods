@@ -9,4 +9,9 @@ public class Multiply extends DoubleArgumentFunction {
     double makeOperation(double x, double y) {
         return x * y;
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Add(new Multiply(function1, function2.differentiate(d)), new Multiply(function1.differentiate(d), function2));
+    }
 }

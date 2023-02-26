@@ -9,4 +9,9 @@ public class Subtract extends DoubleArgumentFunction {
     double makeOperation(double x, double y) {
         return x - y;
     }
+
+    @Override
+    public Function differentiate(String d) {
+        return new Subtract(function1.differentiate(d), function2.differentiate(d));
+    }
 }
