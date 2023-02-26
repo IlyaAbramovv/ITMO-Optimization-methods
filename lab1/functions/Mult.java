@@ -18,10 +18,9 @@ public class Mult extends MultipleArgumentFunction {
     public Function differentiate(String d) {
         List<Function> list = new ArrayList<>();
         for (int i = 0; i < functions.size(); i++) {
-            list.add(this);
-        }
-        for (int i = 0; i < functions.size(); i++) {
-            list.set(i, functions.get(i).differentiate(d));
+            List<Function> copy = new ArrayList<>(this.functions);
+            copy.set(i, copy.get(i).differentiate(d));
+            list.add(new Mult(copy));
         }
         return new Sum(list);
     }

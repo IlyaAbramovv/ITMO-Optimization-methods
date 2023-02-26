@@ -7,10 +7,9 @@ import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
-        Function function = new Pow(new Sin(new Variable("x")), new Cos(new Variable("x"))).differentiate("x");
-        System.out.println(function.evaluate(Map.of("x", 2.0)));
+        Function function = new Log(new Sin(new Variable("x")), new Cos(new Variable("x"))).differentiate("x");
+        System.out.println(function.evaluate(Map.of("x", 0.5)));
         System.out.println(function.evaluate(Map.of("x", 0.1)));
-        System.out.println(new Multiply(new Variable("x"), new Divide(new Cos(new Variable("x")), new Sin(new Variable("x")))).evaluate(Map.of("x", 2.0)));
         var ans = FunctionUtils.gradientDescent(function);
         for (var entry : ans.entrySet()) {
             System.out.println(entry.getKey() + ": " + entry.getValue());
