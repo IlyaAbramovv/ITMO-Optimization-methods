@@ -17,11 +17,13 @@ Function function = new Multiply(
 __________________________________________________________________________________________
 Функции от 2 переменной:
 
-x^2 + 3y^2
-Function function = new Add(
+x^2 + 3y^2 - x - 4y
+Function function = new Sum(List.of(
         new Pow(new Variable("x"), new Const(2.0)),
-        new Multiply(new Const(3.0), new Pow(new Variable("y"), new Const(2.0)))
-);
+        new Multiply(new Const(3.0), new Pow(new Variable("y"), new Const(2.0))),
+        new Negate(new Variable("x")),
+        new Negate(new Multiply(new Const(4.0), new Variable("y")))
+));
 
 3xcos(y) + 2x^2
 Function function = new Add(

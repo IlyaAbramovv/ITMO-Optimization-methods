@@ -8,13 +8,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class MyFrame extends JFrame {
-    public MyFrame(Function function) {
+    public MyFrame(Function function, Function level) {
         final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int width = (int) screenSize.getWidth();
         int height = (int) screenSize.getHeight();
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        MyPanel panel = new MyPanel(width, height, function);
+        MyPanel panel = new MyPanel(width, height, function, level);
         add(panel);
         pack();
         setVisible(true);
