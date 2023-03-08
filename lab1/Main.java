@@ -14,12 +14,10 @@ public class Main {
                 new Multiply(new Variable("x"), new Variable("y")),
                 new Const(4.0)
         ));
-        var ans = GradientDescent.gradientDescent(function, true);
-        for (var step : ans) {
-            for (var beb : step.entrySet()) {
-                System.out.print(beb.getKey() + ": " + beb.getValue() + ", ");
-            }
-            System.out.println();
+        var res = GradientDescent.gradientDescent(function, true);
+        for (var beb : res.get(res.size() - 1).entrySet()) {
+            System.out.println(beb.getKey() + " " + beb.getValue());
         }
+        //Painter.drawDescent(function, null);
     }
 }

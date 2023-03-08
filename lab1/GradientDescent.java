@@ -1,6 +1,7 @@
 package lab1;
 
 import lab1.functions.Function;
+import lab1.functions.FunctionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +13,7 @@ public class GradientDescent {
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
     public static final double PHI = (1 + Math.sqrt(5)) / 2;
-    public static final double ALPHA = 0.3;
+    public static final double ALPHA = 0.48;
 
     private static int countOfGradientCountings, countOfEvaluations;
 
@@ -64,7 +65,7 @@ public class GradientDescent {
     }
 
     private static double getAlpha(Function function, Map<String, Double> vector, Map<String, Double> gradient) {
-        double b = 100, a = 0;
+        double b = 10000, a = 0;
         while (b - a > EPS) {
             double x1 = b - (b - a) / PHI, x2 = a + (b - a) / PHI;
             var vector1 = new HashMap<>(vector);

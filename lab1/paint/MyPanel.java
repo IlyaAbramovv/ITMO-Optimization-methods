@@ -55,18 +55,18 @@ public class MyPanel extends JPanel implements MouseWheelListener {
         }
         g2d.setColor(Color.BLUE);
         var res = GradientDescent.gradientDescent(function, true);
-       /* for (var beb : res) {
-            double x0 = -5, x1 = 8;
+        for (var beb : res) {
+            double x0 = -3, x1 = 8;
             double h = 0.00002;
             double level = function.evaluate(beb);
             while (x0 + h < x1) {
-                double y0 = (-x0 - 2 + Math.sqrt(-3 * x0 * x0 + 16 * x0 - 12 + 4 * level)) / 2.0;
+                double y0 = (-2 - x0 + Math.sqrt(-3 * x0 * x0 + 16 * x0 - 12 + 4 * level)) / 2.0;
                 x0 += h;
-                double y1 = (-x0 - 2 - Math.sqrt(-3 * x0 * x0 + 16 * x0 - 12 + 4 * level)) / 2.0;
+                double y1 = (-2 - x0 - Math.sqrt(-3 * x0 * x0 + 16 * x0 - 12 + 4 * level)) / 2.0;
                 drawLine(g2d, y0, x0, y0, x0);
                 drawLine(g2d, y1, x0, y1, x0);
             }
-        }*/
+        }
         g2d.setColor(Color.RED);
         g2d.setStroke(new BasicStroke(2));
         var first = res.get(0);
