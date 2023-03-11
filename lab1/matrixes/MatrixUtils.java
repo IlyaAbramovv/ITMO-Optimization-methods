@@ -1,5 +1,7 @@
 package lab1.matrixes;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class MatrixUtils {
@@ -18,21 +20,29 @@ public class MatrixUtils {
         return new Matrix(res);
     }
 
-    public static Matrix genMatrix(int n, int k) {
-        Matrix a = genMatrix(n);
-        double[][] matrixB = new double[n][n];
-        matrixB[0][0] = k;
+    public static Matrix generateMatrix(int n, int k) {
+        Matrix a = generateOrthogonalMatrix(n);
+        double[][] matrixb = new double[n][n];
+        List<Integer> lambdas = new ArrayList<>();
+        lambdas.add(k);
         if (n > 1) {
-            matrixB[1][1] = 1;
+            lambdas.add(1);
         }
         for (int i = 2; i < n; i++) {
-            matrixB[i][i] = new Random().nextInt(k) % k + 1;
+            lambdas.add(new Random().nextInt(k) % k + 1);
         }
-        Matrix c = inverse(a);
-        return multiply(multiply(a, new Matrix(matrixB)), c);
+        lambdas.sort(Integer::compareTo);
+        int i = n - 1;
+        for (int lambda : lambdas) {
+            matrixb[i][i] = lambda;
+            i--;
+        }
+        Matrix b = new Matrix(matrixb);
+        Matrix c = transpose(a);
+        return multiply(multiply(a, b), c);
     }
 
-    public static Matrix genMatrix(int n) {
+    public static Matrix generateMatrix(int n) {
         double[][] matrix = new double[n][n];
         for (int i = 0; i < n; i++) {
             matrix[i][i] = 1;
@@ -55,51 +65,54 @@ public class MatrixUtils {
         return new Matrix(matrix);
     }
 
-    public static Matrix inverse(Matrix a) {
-        double temp;
+    public static Matrix transpose(Matrix a) {
         int n = a.size();
-        double[][] matrix = new double[n][2 * n];
+        double[][] matrix = new double[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                matrix[i][j] = a.getMatrix()[i][j];
+                matrix[j][i] = a.getMatrix()[i][j];
             }
         }
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < 2 * n; j++) {
-                if (j == (i + n)) {
-                    matrix[i][j] = 1;
-                }
-            }
-        }
-        for (int i = n - 1; i > 0; i--) {
-            if (matrix[i - 1][0] < matrix[i][0]) {
-                double[] tempArr = matrix[i];
-                matrix[i] = matrix[i - 1];
-                matrix[i - 1] = tempArr;
-            }
-        }
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (j != i) {
-                    temp = matrix[j][i] / matrix[i][i];
-                    for (int k = 0; k < 2 * n; k++) {
-                        matrix[j][k] -= matrix[i][k] * temp;
-                    }
+        return new Matrix(matrix);
+    }
+
+    public static Matrix generateOrthogonalMatrix(int n) {
+        double[][] matrix = MatrixUtils.generateMatrix(n).getMatrix();
+        for (int i = 1; i < n; i++) {
+            for (int k = 0; k < i; k++) {
+                double[] orthogonalVector = getProjection(matrix[i], matrix[k]);
+                for (int j = 0; j < n; j++) {
+                    matrix[i][j] -= orthogonalVector[j];
                 }
             }
         }
         for (int i = 0; i < n; i++) {
-            temp = matrix[i][i];
-            for (int j = 0; j < 2 * n; j++) {
-                matrix[i][j] = matrix[i][j] / temp;
-            }
+            normalize(matrix[i]);
         }
-        double[][] res = new double[n][n];
-        for (int i = 0; i < n; i++) {
-            for (int j = n; j < 2 * n; j++) {
-                res[i][j - n] = matrix[i][j];
-            }
+        return new Matrix(matrix);
+    }
+
+    public static void normalize(double[] vector) {
+        double norma = 0;
+        for (double value : vector) {
+            norma += value * value;
         }
-        return new Matrix(res);
+        norma = Math.sqrt(norma);
+        for (int i = 0; i < vector.length; i++) {
+            vector[i] /= norma;
+        }
+    }
+
+    public static double[] getProjection(double[] v, double[] u) {
+        double[] res = new double[v.length];
+        double scalar = 0, norma = 0;
+        for (int i = 0; i < v.length; i++) {
+            scalar += v[i] * u[i];
+            norma += u[i] * u[i];
+        }
+        for (int i = 0; i < u.length; i++) {
+            res[i] = (scalar / norma) * u[i];
+        }
+        return res;
     }
 }
