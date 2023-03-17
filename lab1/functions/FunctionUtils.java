@@ -13,10 +13,10 @@ public class FunctionUtils {
         return gradient;
     }
 
-    public static List<String> getAllVariables(Function function) {
+    public static Set<String> getAllVariables(Function function) {
         Set<String> set = new HashSet<>();
         getAllVariablesRec(function, set);
-        return new ArrayList<>(set);
+        return set;
     }
 
     private static void getAllVariablesRec(Function function, Set<String> set) {
