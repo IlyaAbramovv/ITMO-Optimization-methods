@@ -7,7 +7,10 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         /*arctan(x)(x-4)*/
-        Function f1 = new Multiply(new Subtract(new Variable("x"), new Const(4.0)), new Arctan(new Variable("x")));
+        Function f1 = new Multiply(
+                new Subtract(new Variable("x"), new Const(4.0)),
+                new Arctan(new Variable("x"))
+        );
         var res1 = Minimization.gradientDescent(f1, Mode.WOLFE_CONDITIONS);
         for (var entry : res1.get(res1.size() - 1).entrySet()) {
             System.out.println(entry.getKey() + ": " + entry.getValue());

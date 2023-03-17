@@ -10,9 +10,9 @@ public class Minimization {
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
     private static final double PHI = (1 + Math.sqrt(5)) / 2;
-    private static final double ALPHA = 0.25;
-    private static final double C1 = 0.01;
-    private static final double C2 = 0.99;
+    private static final double ALPHA = 0.32;
+    private static final double C1 = 1e-3;
+    private static final double C2 = 1 - 1e-3;
 
     private static int countOfGradientCountings, countOfEvaluations;
 
@@ -70,8 +70,7 @@ public class Minimization {
 
     private static double getBestAlpha(Function function, Map<String, Double> vector,
                                        Map<String, Double> gradient, boolean checkWolfesConditions) {
-        double b = 1000, a = 0;
-        double res = -1;
+        double b = 1, a = 0;
         while (b - a > EPS) {
             double x1 = b - (b - a) / PHI, x2 = a + (b - a) / PHI;
             var vector1 = new HashMap<>(vector);
@@ -82,9 +81,9 @@ public class Minimization {
             countOfEvaluations += 2;
             if (checkWolfesConditions) {
                 if (checkWolfesConditions(function, vector, gradient, x1)) {
-                    res = x1;
+                    return x1;
                 } else if (checkWolfesConditions(function, vector, gradient, x2)) {
-                    res = x2;
+                    return x2;
                 }
             }
             if (y1 >= y2) {
@@ -93,7 +92,7 @@ public class Minimization {
                 b = x2;
             }
         }
-        return checkWolfesConditions ? res : (a + b) / 2;
+        return (a + b) / 2;
     }
 
     private static boolean checkWolfesConditions(Function function, Map<String, Double> vector, Map<String, Double> gradient, double alpha) {
@@ -105,8 +104,6 @@ public class Minimization {
         boolean second = gradient1.entrySet().stream().map(entry ->
                 -entry.getValue() * gradient.get(entry.getKey())).reduce(0.0, Double::sum)
                 >= C2 * gradient.values().stream().map(val -> -val * val).reduce(0.0, Double::sum);
-        countOfGradientCountings++;
-        countOfEvaluations += 2 + gradient1.size();
         return first && second;
     }
 }
