@@ -1,0 +1,55 @@
+Функции от 1 переменной:
+
+x^2
+Function function = new Pow(new Variable("x"), new Const(2.0));
+
+arctan(x) + exp(sin(x))
+Function function = new Add(new Arctan(new Variable("x")),
+        new Exp(new Sin(new Multiply(new Const(2.0),new Variable("x"))))
+);
+
+(x + 1)cos(4arctan(x))
+Function function = new Multiply(
+        new Add(new Variable("x"), new Const(1.0)),
+        new Cos(new Multiply(new Const(4.0), new Arctan(new Variable("x"))))
+);
+
+__________________________________________________________________________________________
+Функции от 2 переменной:
+
+x^2 + 3y^2 - x - 4y
+Function function = new Sum(List.of(
+        new Pow(new Variable("x"), new Const(2.0)),
+        new Multiply(new Const(3.0), new Pow(new Variable("y"), new Const(2.0))),
+        new Negate(new Variable("x")),
+        new Negate(new Multiply(new Const(4.0), new Variable("y")))
+));
+
+3xcos(y) + 2x^2
+Function function = new Add(
+        new Mult(List.of(new Const(3.0), new Variable("x"), new Cos(new Variable("y")))),
+        new Multiply(new Const(2.0), new Pow(new Variable("x"), new Const(2.0)))
+);
+
+x^2 + y^2 - 3y + 2x + xy + 4
+Function function = new Sum(List.of(
+        new Pow(new Variable("x"), new Const(2.0)),
+        new Pow(new Variable("y"), new Const(2.0)),
+        new Negate(new Multiply(new Const(3.0), new Variable("y"))),
+        new Multiply(new Const(2.0), new Variable("x")),
+        new Multiply(new Variable("x"), new Variable("y")),
+        new Const(4.0)
+));
+
+__________________________________________________________________________________________
+Функции от множества переменных:
+
+(x1 - 12)^2 + (x2 - 11)^2 + (x3 - 1)^2 + (x4 + 12)^2 + (x5 - 4)^2 + (x6 - 32)^2
+Function function = new Sum(List.of(
+        new Pow(new Subtract(new Variable("x1"), new Const(12.0)), new Const(2.0)),
+        new Pow(new Subtract(new Variable("x2"), new Const(11.0)), new Const(2.0)),
+        new Pow(new Subtract(new Variable("x3"), new Const(1.0)), new Const(2.0)),
+        new Pow(new Add(new Variable("x4"), new Const(12.0)), new Const(2.0)),
+        new Pow(new Subtract(new Variable("x5"), new Const(4.0)), new Const(2.0)),
+        new Pow(new Subtract(new Variable("x6"), new Const(32.0)), new Const(2.0))
+));
