@@ -69,7 +69,7 @@ public class Minimization {
                     new Const(x.get(i))), new Variable("b"))), new Const(2.0)));
         }
         Sum function = new Sum(functions);
-        var res = gradientDescent(function, Mode.GOLDEN_RATIO, 5);
+        var res = gradientDescent(function, Mode.GOLDEN_RATIO, 1);
         double a = res.get(res.size() - 1).get("a");
         double b = res.get(res.size() - 1).get("b");
         return new double[]{a, b};
