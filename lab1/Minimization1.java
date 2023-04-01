@@ -5,7 +5,7 @@ import functions.FunctionUtils;
 
 import java.util.*;
 
-public class Minimization {
+public class Minimization1 {
     public static final double EPS = 1e-7;
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
@@ -68,8 +68,8 @@ public class Minimization {
         return (a + b) / 2;
     }
 
-    private static double getBestAlpha(Function function, Map<String, Double> vector,
-                                       Map<String, Double> gradient, boolean checkWolfesConditions) {
+    public static double getBestAlpha(Function function, Map<String, Double> vector,
+                                      Map<String, Double> gradient, boolean checkWolfesConditions) {
         double b = 1, a = 0;
         while (b - a > EPS) {
             double x1 = b - (b - a) / PHI, x2 = a + (b - a) / PHI;

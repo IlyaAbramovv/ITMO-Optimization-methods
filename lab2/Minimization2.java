@@ -1,14 +1,15 @@
 package lab2;
 
 import functions.*;
+import lab1.Minimization1;
 
 import java.util.*;
 
-public class Minimization {
+public class Minimization2 {
     public static final double EPS = 1e-7;
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
-    private static final double ALPHA = 0.22;
+    private static final double ALPHA = 0.07;
 
     public static List<Map<String, Double>> gradientDescent(Sum function, int batchSize) {
         long start = System.currentTimeMillis();
@@ -20,30 +21,33 @@ public class Minimization {
         }
         res.add(Map.copyOf(vector));
         int countInterations = 0;
+        int epoch = (int) Math.ceil((double) function.getFunctions().size() / batchSize);
         while (countInterations < MAX_COUNT_OF_ITERATIONS) {
-            List<Map<String, Double>> gradients = new ArrayList<>();
-            for (int i = 0; i < batchSize; i++) {
-                var grad = FunctionUtils.getGradient(
-                        function.getFunctions().get((i + batchSize * countInterations) % function.getFunctions().size()), vector);
-                gradients.add(grad);
-            }
-            Map<String, Double> gradient = new HashMap<>();
-            for (String variable : variables) {
-                double sum = 0;
-                for (var grad : gradients) {
-                    sum += grad.get(variable);
-                }
-                gradient.put(variable, sum);
-            }
-            double alpha = ALPHA;
             double maxDiff = 0;
-            for (var entry : gradient.entrySet()) {
-                double diff = alpha * entry.getValue();
-                maxDiff = Math.max(maxDiff, Math.abs(diff));
-                vector.put(entry.getKey(), vector.get(entry.getKey()) - diff);
+            for (int j = 0; j < epoch; j++) {
+                List<Map<String, Double>> gradients = new ArrayList<>();
+                for (int i = 0; i < batchSize; i++) {
+                    var grad = FunctionUtils.getGradient(function.getFunctions().
+                            get((i + batchSize * (countInterations + j)) % function.getFunctions().size()), vector);
+                    gradients.add(grad);
+                }
+                Map<String, Double> gradient = new HashMap<>();
+                for (String variable : variables) {
+                    double sum = 0;
+                    for (var grad : gradients) {
+                        sum += grad.get(variable);
+                    }
+                    gradient.put(variable, sum);
+                }
+                double alpha = Minimization1.getBestAlpha(function, vector, gradient, false);
+                for (var entry : gradient.entrySet()) {
+                    double diff = alpha * entry.getValue();
+                    maxDiff = Math.max(maxDiff, Math.abs(diff));
+                    vector.put(entry.getKey(), vector.get(entry.getKey()) - diff);
+                }
+                res.add(Map.copyOf(vector));
             }
-            res.add(Map.copyOf(vector));
-            countInterations++;
+            countInterations += epoch;
             if (maxDiff <= EPS) {
                 break;
             }
