@@ -1,4 +1,7 @@
-import functions.*;
+package lab1;
+
+import functions.Function;
+import functions.FunctionUtils;
 
 import java.util.*;
 
@@ -7,12 +10,15 @@ public class Minimization {
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
     private static final double PHI = (1 + Math.sqrt(5)) / 2;
-    private static final double ALPHA = 0.22;
+    private static final double ALPHA = 0.32;
     private static final double C1 = 1e-3;
     private static final double C2 = 1 - 1e-3;
 
-    public static List<Map<String, Double>> gradientDescent(Sum function, Mode mode, int batchSize) {
-        long start = System.currentTimeMillis();
+    private static int countOfGradientCountings, countOfEvaluations;
+
+    public static List<Map<String, Double>> gradientDescent(Function function, Mode mode) {
+        countOfGradientCountings = 0;
+        countOfEvaluations = 0;
         Set<String> variables = FunctionUtils.getAllVariables(function);
         Map<String, Double> vector = new HashMap<>();
         List<Map<String, Double>> res = new ArrayList<>();
@@ -22,20 +28,9 @@ public class Minimization {
         res.add(Map.copyOf(vector));
         int countInterations = 0;
         while (countInterations < MAX_COUNT_OF_ITERATIONS) {
-            List<Map<String, Double>> gradients = new ArrayList<>();
-            for (int i = 0; i < batchSize; i++) {
-                var grad = FunctionUtils.getGradient(
-                        function.getFunctions().get((i + batchSize * countInterations) % function.getFunctions().size()), vector);
-                gradients.add(grad);
-            }
-            Map<String, Double> gradient = new HashMap<>();
-            for (String variable : variables) {
-                double sum = 0;
-                for (var grad : gradients) {
-                    sum += grad.get(variable);
-                }
-                gradient.put(variable, sum);
-            }
+            Map<String, Double> gradient = FunctionUtils.getGradient(function, vector);
+            countOfGradientCountings++;
+            countOfEvaluations += gradient.size();
             double alpha = ALPHA;
             if (mode == Mode.GOLDEN_RATIO) {
                 alpha = getBestAlpha(function, vector, gradient, false);
@@ -54,25 +49,9 @@ public class Minimization {
                 break;
             }
         }
-        System.out.println(System.currentTimeMillis() - start + " ms");
+        System.out.println("Count of gradient countings: " + countOfGradientCountings);
+        System.out.println("Count of function evaluations: " + countOfEvaluations);
         return res;
-    }
-
-    public static List<Map<String, Double>> gradientDescent(Function function, Mode mode) {
-        return gradientDescent(new Sum(List.of(function)), mode, 1);
-    }
-
-    public static double[] linearRegression(List<Double> x, List<Double> y) {
-        List<Function> functions = new ArrayList<>();
-        for (int i = 0; i < y.size(); i++) {
-            functions.add(new Pow(new Subtract(new Const(y.get(i)), new Add(new Multiply(new Variable("a"),
-                    new Const(x.get(i))), new Variable("b"))), new Const(2.0)));
-        }
-        Sum function = new Sum(functions);
-        var res = gradientDescent(function, Mode.GOLDEN_RATIO, 1);
-        double a = res.get(res.size() - 1).get("a");
-        double b = res.get(res.size() - 1).get("b");
-        return new double[]{a, b};
     }
 
     public static double goldenRatio(Function function, double a, double b) {
@@ -99,6 +78,7 @@ public class Minimization {
             var vector2 = new HashMap<>(vector);
             vector2.replaceAll((k, v) -> v - x2 * gradient.get(k));
             double y1 = function.evaluate(vector1), y2 = function.evaluate(vector2);
+            countOfEvaluations += 2;
             if (checkWolfesConditions) {
                 if (checkWolfesConditions(function, vector, gradient, x1)) {
                     return x1;
