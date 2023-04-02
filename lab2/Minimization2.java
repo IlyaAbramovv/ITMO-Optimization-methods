@@ -52,11 +52,13 @@ public class Minimization2 {
                 G.get(u).put(v, 0d);
             }
         }
-
+        int epoch = (int) Math.ceil((double) function.getFunctions().size() / batchSize);
         while (countIterations < MAX_COUNT_OF_ITERATIONS) {
-            double maxDiff = adaptiveOneTime(function, batchSize, variables, res, vector, countIterations, G);
-
-            countIterations++;
+            double maxDiff = 0;
+            for (int i = 0; i < epoch; i++) {
+                maxDiff = adaptiveOneTime(function, batchSize, variables, res, vector, countIterations + i, G);
+            }
+            countIterations += epoch;
             if (maxDiff <= EPS) {
                 break;
             }
@@ -255,22 +257,24 @@ public class Minimization2 {
         return vector;
     }
 
-    private static List<Map<String, Double>> abstractGD(MultipleArgumentFunction function, int batchSize, int vectorAmount,
-                                                        GDOneIterFunction oneIterFunction) {
+    private static List<Map<String, Double>> abstractGD(MultipleArgumentFunction function, int batchSize,
+                                                        int vectorAmount, GDOneIterFunction oneIterFunction) {
         long start = System.nanoTime();
         final Set<String> variables = FunctionUtils.getAllVariables(function);
         final List<Map<String, Double>> res = new ArrayList<>();
-
         List<Map<String, Double>> vectors = new ArrayList<>(vectorAmount);
         for (int i = 0; i < vectorAmount; i++) {
             vectors.add(initializeVector(variables));
         }
         res.add(Map.copyOf(vectors.get(0)));
         int countIterations = 0;
+        int epoch = (int) Math.ceil((double) function.getFunctions().size() / batchSize);
         while (countIterations < MAX_COUNT_OF_ITERATIONS) {
-
-            double maxDiff = oneIterFunction.apply(function, batchSize, variables, vectors, countIterations, res);
-            countIterations++;
+            double maxDiff = 0;
+            for (int i = 0; i < epoch; i++) {
+                maxDiff = oneIterFunction.apply(function, batchSize, variables, vectors, countIterations + i, res);
+            }
+            countIterations += epoch;
             if (maxDiff <= EPS) {
                 break;
             }
