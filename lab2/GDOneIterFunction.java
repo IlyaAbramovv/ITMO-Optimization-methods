@@ -1,4 +1,7 @@
+package lab2;
+
 import functions.MultipleArgumentFunction;
+import lab1.Mode;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +15,6 @@ public interface GDOneIterFunction {
             Set<String> variables,
             List<Map<String, Double>> vectors,
             int countIterations,
-            Mode mode,
             List<Map<String, Double>> res
     );
 }
