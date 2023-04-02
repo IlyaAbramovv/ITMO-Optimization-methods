@@ -7,7 +7,6 @@ import java.util.*;
 
 import static lab1.Minimization1.getBestAlpha;
 
-
 public class Minimization2 {
     public static final double EPS = 1e-7;
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
@@ -324,5 +323,4 @@ public class Minimization2 {
         double b = res.get(res.size() - 1).get("b");
         return new double[]{a, b};
     }
-
 }
