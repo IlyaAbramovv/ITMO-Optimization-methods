@@ -92,7 +92,7 @@ public class Minimization2 {
 
         double maxDiff = 0;
         for (var entry : gradient.entrySet()) {
-            double diff = ALPHA * averagedV.get(entry.getKey()) / Math.sqrt(averagedS.get(entry.getKey()) + 1e-8);
+            double diff = ALPHA * averagedV.get(entry.getKey()) / Math.sqrt(averagedS.get(entry.getKey()) + EPS);
             maxDiff = Math.max(maxDiff, Math.abs(diff));
             vectorX.put(entry.getKey(), vectorX.get(entry.getKey()) - diff);
         }
@@ -144,10 +144,8 @@ public class Minimization2 {
                 vector,
                 countIterations);
 
-        double alpha = getBestAlpha(function, vector, gradient, false);
-
         double maxDiff = getMaxDiffAndChangeVector(
-                vector, gradient, alpha);
+                vector, gradient, ALPHA);
         res.add(Map.copyOf(vector));
         return maxDiff;
     }
@@ -183,11 +181,9 @@ public class Minimization2 {
                 VectorUtils.subtract(vectorX, VectorUtils.multiply(vectorV, ALPHA * GAMMA)),
                 countIterations);
 
-        double alpha = getBestAlpha(function, vectorX, gradient, false);
         vectorV.replaceAll((s, d) -> d * GAMMA);
-        double maxDiff = getMaxDiffAndChangeVector(vectorV, gradient, (GAMMA - 1)
-        );
-        vectorX.replaceAll((s, d) -> d - vectorV.get(s) * alpha);
+        getMaxDiffAndChangeVector(vectorV, gradient, (GAMMA - 1));
+        double maxDiff = getMaxDiffAndChangeVector(vectorX, vectorV, ALPHA);
         res.add(Map.copyOf(vectorX));
 
         return maxDiff;
@@ -210,11 +206,9 @@ public class Minimization2 {
                 vectorX,
                 countIterations);
 
-        double alpha = getBestAlpha(function, vectorX, gradient, false);
         vectorV.replaceAll((s, d) -> d * GAMMA + gradient.get(s) * (1 - GAMMA));
 
-        double maxDiff = getMaxDiffAndChangeVector(vectorX, vectorV, alpha
-        );
+        double maxDiff = getMaxDiffAndChangeVector(vectorX, vectorV, ALPHA);
         res.add(Map.copyOf(vectorX));
         return maxDiff;
     }
