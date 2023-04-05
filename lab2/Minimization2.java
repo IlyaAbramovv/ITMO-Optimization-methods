@@ -1,21 +1,20 @@
 package lab2;
 
 import functions.*;
+import lab1.Minimization1;
 import matrixes.VectorUtils;
 
 import java.util.*;
-
-import static lab1.Minimization1.getBestAlpha;
 
 public class Minimization2 {
     public static final double EPS = 1e-7;
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
-    private static final double ALPHA = 0.22;
-    private static final double GAMMA = 0.99;
+    private static final double ALPHA = 0.05;
+    private static final double GAMMA = 0.9;
     private static final double BETA1 = 0.9;
     private static final double BETA2 = 0.999;
-    public static final double ALPHA_FOR_ADA = 0.8;
+    public static final double ALPHA_FOR_ADA = 0.05;
 
     public static List<Map<String, Double>> gradientDescent(MultipleArgumentFunction function, int batchSize) {
         return abstractGD(function, batchSize, 1, Minimization2::gdOneTime);
@@ -56,7 +55,7 @@ public class Minimization2 {
         while (countIterations < MAX_COUNT_OF_ITERATIONS) {
             double maxDiff = 0;
             for (int i = 0; i < epoch; i++) {
-                maxDiff = adaptiveOneTime(function, batchSize, variables, res, vector, countIterations + i, G);
+                maxDiff = Math.max(maxDiff, adaptiveOneTime(function, batchSize, variables, res, vector, countIterations + i, G));
             }
             countIterations += epoch;
             if (maxDiff <= EPS) {
@@ -88,7 +87,7 @@ public class Minimization2 {
         averagedV.replaceAll((s, d) -> d / (1 - Math.pow(BETA1, countIterations + 1)));
 
         var averagedS = new HashMap<>(Map.copyOf(vectorS));
-        averagedV.replaceAll((s, d) -> d / (1 - Math.pow(BETA2, countIterations + 1)));
+        averagedS.replaceAll((s, d) -> d / (1 - Math.pow(BETA2, countIterations + 1)));
 
         double maxDiff = 0;
         for (var entry : gradient.entrySet()) {
@@ -143,9 +142,9 @@ public class Minimization2 {
                 variables,
                 vector,
                 countIterations);
-
+        double alpha = Minimization1.getBestAlpha(function, vector, gradient, false);
         double maxDiff = getMaxDiffAndChangeVector(
-                vector, gradient, ALPHA);
+                vector, gradient, alpha);
         res.add(Map.copyOf(vector));
         return maxDiff;
     }
@@ -266,7 +265,7 @@ public class Minimization2 {
         while (countIterations < MAX_COUNT_OF_ITERATIONS) {
             double maxDiff = 0;
             for (int i = 0; i < epoch; i++) {
-                maxDiff = oneIterFunction.apply(function, batchSize, variables, vectors, countIterations + i, res);
+                maxDiff = Math.max(maxDiff, oneIterFunction.apply(function, batchSize, variables, vectors, countIterations + i, res));
             }
             countIterations += epoch;
             if (maxDiff <= EPS) {

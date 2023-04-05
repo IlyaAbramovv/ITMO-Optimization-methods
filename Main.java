@@ -9,7 +9,7 @@ public class Main {
     public static void main(String[] args) {
         var res = Minimization2.linearRegression(List.of(1.0, 2.0, 3.0, 4.0, 10.0),
                 List.of(0.0, 2.0, 4.0, 6.0, 18.0),
-                GradientDescentMode.NESTEROV,
+                GradientDescentMode.RMSPROP,
                 1);
         System.out.println(res[0] + " " + res[1]);
         List<Function> list = new ArrayList<>();
@@ -29,7 +29,11 @@ public class Main {
         List<Integer> values = List.of(1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
                 110, 120, 130, 140, 150, 160, 170, 180, 190, 200);
         for (int i : values) {
-            Minimization2.gradientDescent(f, i);
+            var ress = Minimization2.gradientDescent(f, i);
+//            for (var entry: ress.get(ress.size() - 1).entrySet()){
+//                System.out.println(entry.getKey() + " " + entry.getValue());
+//            }
+//            break;
         }
     }
 }
