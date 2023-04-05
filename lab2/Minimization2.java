@@ -14,7 +14,7 @@ public class Minimization2 {
     private static final double GAMMA = 0.9;
     private static final double BETA1 = 0.9;
     private static final double BETA2 = 0.999;
-    public static final double ALPHA_FOR_ADA = 0.05;
+    public static final double ALPHA_FOR_ADA = 0.06;
 
     public static List<Map<String, Double>> gradientDescent(MultipleArgumentFunction function, int batchSize) {
         return abstractGD(function, batchSize, 1, Minimization2::gdOneTime);
@@ -119,7 +119,7 @@ public class Minimization2 {
 
         double maxDiff = 0;
         for (var entry : gradient.entrySet()) {
-            double diff = ALPHA_FOR_ADA * gradient.get(entry.getKey()) / Math.sqrt(G.get(entry.getKey()).get(entry.getKey()));
+            double diff = ALPHA_FOR_ADA * gradient.get(entry.getKey()) / Math.sqrt(G.get(entry.getKey()).get(entry.getKey()) + EPS);
             maxDiff = Math.max(maxDiff, Math.abs(diff));
             vector.put(entry.getKey(), vector.get(entry.getKey()) - diff);
         }
