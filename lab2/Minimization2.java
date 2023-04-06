@@ -1,20 +1,19 @@
 package lab2;
 
 import functions.*;
-import lab1.Minimization1;
 import matrixes.VectorUtils;
 
 import java.util.*;
+
+import static lab1.Minimization1.getBestAlpha;
 
 public class Minimization2 {
     public static final double EPS = 1e-7;
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
-    private static final double ALPHA = 0.05;
-    private static final double GAMMA = 0.9;
+    private static final double GAMMA = 0.99;
     private static final double BETA1 = 0.9;
     private static final double BETA2 = 0.999;
-    public static final double ALPHA_FOR_ADA = 0.06;
 
     public static List<Map<String, Double>> gradientDescent(MultipleArgumentFunction function, int batchSize) {
         return abstractGD(function, batchSize, 1, Minimization2::gdOneTime);
@@ -73,6 +72,7 @@ public class Minimization2 {
             List<Map<String, Double>> vectors,
             int countIterations,
             List<Map<String, Double>> res) {
+        final double ALPHA = 0.001;
 
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
@@ -91,7 +91,7 @@ public class Minimization2 {
 
         double maxDiff = 0;
         for (var entry : gradient.entrySet()) {
-            double diff = ALPHA * averagedV.get(entry.getKey()) / Math.sqrt(averagedS.get(entry.getKey()) + EPS);
+            double diff = ALPHA * averagedV.get(entry.getKey()) / Math.sqrt(averagedS.get(entry.getKey()) + 1e-9);
             maxDiff = Math.max(maxDiff, Math.abs(diff));
             vectorX.put(entry.getKey(), vectorX.get(entry.getKey()) - diff);
         }
@@ -110,6 +110,7 @@ public class Minimization2 {
             int countIterations,
             Map<String, Map<String, Double>> G
     ) {
+        final double ALPHA = 0.001;
         var gradient = getGradientWithRespectToBatchSize(function, batchSize, variables, vector, countIterations);
         for (var v : variables) {
             for (var u : variables) {
@@ -119,7 +120,7 @@ public class Minimization2 {
 
         double maxDiff = 0;
         for (var entry : gradient.entrySet()) {
-            double diff = ALPHA_FOR_ADA * gradient.get(entry.getKey()) / Math.sqrt(G.get(entry.getKey()).get(entry.getKey()) + EPS);
+            double diff = ALPHA * gradient.get(entry.getKey()) / Math.sqrt(G.get(entry.getKey()).get(entry.getKey()) + 1e-8);
             maxDiff = Math.max(maxDiff, Math.abs(diff));
             vector.put(entry.getKey(), vector.get(entry.getKey()) - diff);
         }
@@ -142,7 +143,8 @@ public class Minimization2 {
                 variables,
                 vector,
                 countIterations);
-        double alpha = Minimization1.getBestAlpha(function, vector, gradient, false);
+
+        double alpha = getBestAlpha(function, vector, gradient, false);
         double maxDiff = getMaxDiffAndChangeVector(
                 vector, gradient, alpha);
         res.add(Map.copyOf(vector));
@@ -171,6 +173,8 @@ public class Minimization2 {
             int countIterations,
             List<Map<String, Double>> res
     ) {
+        final double ALPHA = 0.001;
+
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
         Map<String, Double> gradient = getGradientWithRespectToBatchSize(
@@ -196,6 +200,8 @@ public class Minimization2 {
             int countIterations,
             List<Map<String, Double>> res
     ) {
+        final double ALPHA = 0.001;
+
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
         Map<String, Double> gradient = getGradientWithRespectToBatchSize(
@@ -220,6 +226,8 @@ public class Minimization2 {
             int countIterations,
             List<Map<String, Double>> res
     ) {
+        final double ALPHA = 0.001;
+
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
         Map<String, Double> gradient = getGradientWithRespectToBatchSize(
@@ -233,7 +241,7 @@ public class Minimization2 {
 
         double maxDiff = 0;
         for (var entry : gradient.entrySet()) {
-            double diff = ALPHA * entry.getValue() / Math.sqrt(vectorV.get(entry.getKey()) + EPS);
+            double diff = ALPHA * entry.getValue() / Math.sqrt(vectorV.get(entry.getKey()) + 1e-9);
             maxDiff = Math.max(maxDiff, Math.abs(diff));
             vectorX.put(entry.getKey(), vectorX.get(entry.getKey()) - diff);
         }
