@@ -9,13 +9,11 @@ import static lab1.Minimization1.getBestAlpha;
 
 public class Minimization2 {
     public static final double EPS = 1e-7;
-    private static final int MAX_COUNT_OF_ITERATIONS = 10000;
-    private static final double INITIAL_VALUE = 2.0;
-    private static final double ALPHA = 0.22;
+    private static final int MAX_COUNT_OF_ITERATIONS = 100000;
+    private static final double INITIAL_VALUE = 10.0;
     private static final double GAMMA = 0.99;
-    private static final double BETA1 = 0.9;
+    private static final double BETA1 = 0.99;
     private static final double BETA2 = 0.999;
-    public static final double ALPHA_FOR_ADA = 0.8;
 
     public static List<Map<String, Double>> gradientDescent(MultipleArgumentFunction function, int batchSize) {
         return abstractGD(function, batchSize, 1, Minimization2::gdOneTime);
@@ -38,6 +36,7 @@ public class Minimization2 {
     }
 
     public static List<Map<String, Double>> adaptiveGradientDescent(MultipleArgumentFunction function, int batchSize) {
+
         long start = System.nanoTime();
         final Set<String> variables = FunctionUtils.getAllVariables(function);
         final List<Map<String, Double>> res = new ArrayList<>();
@@ -61,7 +60,9 @@ public class Minimization2 {
                 break;
             }
         }
-        System.out.println((System.nanoTime() - start) / 1e6 + " ms");
+
+        System.out.println(res.get(res.size() - 1).values());
+        System.out.println(countIterations);
         return res;
     }
 
@@ -72,6 +73,7 @@ public class Minimization2 {
             List<Map<String, Double>> vectors,
             int countIterations,
             List<Map<String, Double>> res) {
+        final double ALPHA = 0.001;
 
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
@@ -86,11 +88,11 @@ public class Minimization2 {
         averagedV.replaceAll((s, d) -> d / (1 - Math.pow(BETA1, countIterations + 1)));
 
         var averagedS = new HashMap<>(Map.copyOf(vectorS));
-        averagedV.replaceAll((s, d) -> d / (1 - Math.pow(BETA2, countIterations + 1)));
+        averagedS.replaceAll((s, d) -> d / (1 - Math.pow(BETA2, countIterations + 1)));
 
         double maxDiff = 0;
         for (var entry : gradient.entrySet()) {
-            double diff = ALPHA * averagedV.get(entry.getKey()) / Math.sqrt(averagedS.get(entry.getKey()) + 1e-8);
+            double diff = ALPHA * averagedV.get(entry.getKey()) / Math.sqrt(averagedS.get(entry.getKey()) + 1e-9);
             maxDiff = Math.max(maxDiff, Math.abs(diff));
             vectorX.put(entry.getKey(), vectorX.get(entry.getKey()) - diff);
         }
@@ -109,6 +111,8 @@ public class Minimization2 {
             int countIterations,
             Map<String, Map<String, Double>> G
     ) {
+        final double ALPHA = 0.001;
+
         var gradient = getGradientWithRespectToBatchSize(function, batchSize, variables, vector, countIterations);
         for (var v : variables) {
             for (var u : variables) {
@@ -118,7 +122,7 @@ public class Minimization2 {
 
         double maxDiff = 0;
         for (var entry : gradient.entrySet()) {
-            double diff = ALPHA_FOR_ADA * gradient.get(entry.getKey()) / Math.sqrt(G.get(entry.getKey()).get(entry.getKey()));
+            double diff = ALPHA * gradient.get(entry.getKey()) / Math.sqrt(G.get(entry.getKey()).get(entry.getKey()) + 1e-8);
             maxDiff = Math.max(maxDiff, Math.abs(diff));
             vector.put(entry.getKey(), vector.get(entry.getKey()) - diff);
         }
@@ -143,7 +147,6 @@ public class Minimization2 {
                 countIterations);
 
         double alpha = getBestAlpha(function, vector, gradient, false);
-
         double maxDiff = getMaxDiffAndChangeVector(
                 vector, gradient, alpha);
         res.add(Map.copyOf(vector));
@@ -172,6 +175,8 @@ public class Minimization2 {
             int countIterations,
             List<Map<String, Double>> res
     ) {
+        final double ALPHA = 0.001;
+
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
         Map<String, Double> gradient = getGradientWithRespectToBatchSize(
@@ -199,6 +204,8 @@ public class Minimization2 {
             int countIterations,
             List<Map<String, Double>> res
     ) {
+        final double ALPHA = 0.001;
+
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
         Map<String, Double> gradient = getGradientWithRespectToBatchSize(
@@ -225,6 +232,8 @@ public class Minimization2 {
             int countIterations,
             List<Map<String, Double>> res
     ) {
+        final double ALPHA = 0.001;
+
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
         Map<String, Double> gradient = getGradientWithRespectToBatchSize(
@@ -238,7 +247,7 @@ public class Minimization2 {
 
         double maxDiff = 0;
         for (var entry : gradient.entrySet()) {
-            double diff = ALPHA * entry.getValue() / Math.sqrt(vectorV.get(entry.getKey()) + EPS);
+            double diff = ALPHA * entry.getValue() / Math.sqrt(vectorV.get(entry.getKey()) + 1e-9);
             maxDiff = Math.max(maxDiff, Math.abs(diff));
             vectorX.put(entry.getKey(), vectorX.get(entry.getKey()) - diff);
         }
@@ -255,8 +264,9 @@ public class Minimization2 {
         return vector;
     }
 
-    private static List<Map<String, Double>> abstractGD(MultipleArgumentFunction function, int batchSize, int vectorAmount,
-                                                        GDOneIterFunction oneIterFunction) {
+    private static List<Map<String, Double>> abstractGD(MultipleArgumentFunction function, int batchSize,
+                                                        int vectorAmount, GDOneIterFunction oneIterFunction) {
+
         long start = System.nanoTime();
         final Set<String> variables = FunctionUtils.getAllVariables(function);
         final List<Map<String, Double>> res = new ArrayList<>();
@@ -275,7 +285,9 @@ public class Minimization2 {
                 break;
             }
         }
-        System.out.println((System.nanoTime() - start) / 1e6 + " ms");
+
+        System.out.println(res.get(res.size() - 1).values());
+        System.out.println(countIterations);
         return res;
     }
 
@@ -304,7 +316,8 @@ public class Minimization2 {
         return gradient;
     }
 
-    public static double[] linearRegression(List<Double> x, List<Double> y, GradientDescentMode gdMode, int batchSize) {
+    public static double[] linearRegression(List<Double> x, List<Double> y, GradientDescentMode gdMode,
+                                            int batchSize) {
         List<Function> functions = new ArrayList<>();
         for (int i = 0; i < y.size(); i++) {
             functions.add(new Pow(new Subtract(new Const(y.get(i)), new Add(new Multiply(new Variable("a"),
