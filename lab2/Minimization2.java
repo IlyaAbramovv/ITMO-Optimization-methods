@@ -144,7 +144,11 @@ public class Minimization2 {
                 vector,
                 countIterations);
 
-        double alpha = getBestAlpha(function, vector, gradient, false);
+
+        final double initial = 0.5;
+        double alpha = stepDecay(countIterations, initial, 0.25, 3);
+//        double alpha = getBestAlpha(function, vector, gradient, false);
+
         double maxDiff = getMaxDiffAndChangeVector(
                 vector, gradient, alpha);
         res.add(Map.copyOf(vector));
@@ -280,7 +284,9 @@ public class Minimization2 {
                 break;
             }
         }
-        System.out.println((System.nanoTime() - start) / 1e6 + " ms");
+        System.out.print(countIterations + " ");
+        System.out.println((System.nanoTime() - start) / 1000000);
+        System.out.println(res.get(res.size() - 1));
         return res;
     }
 
@@ -307,6 +313,10 @@ public class Minimization2 {
             gradient.put(variable, sum);
         }
         return gradient;
+    }
+
+    private static double stepDecay(int iterNum, double initial, double d, int r) {
+        return initial * Math.pow(d, 1 + (iterNum) / r);
     }
 
     public static double[] linearRegression(List<Double> x, List<Double> y, GradientDescentMode gdMode, int batchSize) {
