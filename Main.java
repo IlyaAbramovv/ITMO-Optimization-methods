@@ -29,11 +29,7 @@ public class Main {
         List<Integer> values = List.of(1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
                 110, 120, 130, 140, 150, 160, 170, 180, 190, 200);
         for (int i : values) {
-            var ress = Minimization2.gradientDescent(f, i);
-//            for (var entry: ress.get(ress.size() - 1).entrySet()){
-//                System.out.println(entry.getKey() + " " + entry.getValue());
-//            }
-//            break;
+            Minimization2.gradientDescent(f, i);
         }
     }
 }
