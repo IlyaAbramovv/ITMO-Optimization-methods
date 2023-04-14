@@ -14,6 +14,8 @@ public class Minimization2 {
     private static final double GAMMA = 0.99;
     private static final double BETA1 = 0.9;
     private static final double BETA2 = 0.999;
+    private static final double L1_ALPHA = 0.5;
+    private static final double L2_ALPHA = 0.5;
 
     public static List<Map<String, Double>> gradientDescent(MultipleArgumentFunction function, int batchSize) {
         return abstractGD(function, batchSize, 1, Minimization2::gdOneTime);
@@ -145,9 +147,9 @@ public class Minimization2 {
                 countIterations);
 
 
-        final double initial = 0.5;
-        double alpha = stepDecay(countIterations, initial, 0.25, 3);
-//        double alpha = getBestAlpha(function, vector, gradient, false);
+//        final double initial = 0.5;
+//        double alpha = stepDecay(countIterations, initial, 0.25, 3);
+        double alpha = getBestAlpha(function, vector, gradient, false);
 
         double maxDiff = getMaxDiffAndChangeVector(
                 vector, gradient, alpha);
@@ -319,11 +321,22 @@ public class Minimization2 {
         return initial * Math.pow(d, 1 + (iterNum) / r);
     }
 
-    public static double[] linearRegression(List<Double> x, List<Double> y, GradientDescentMode gdMode, int batchSize) {
+    public static Map<String, Double> linearRegression(List<Double> x, List<Double> y,
+                                                       GradientDescentMode gdMode, int batchSize) {
+        return polynomialRegression(x, y, 1, gdMode, batchSize, Regularization.DEFAULT);
+    }
+
+    //a_0 + a_1x + a_2x^2 + ... + a_nx^n
+    public static Map<String, Double> polynomialRegression(List<Double> x, List<Double> y, int n,
+                                                           GradientDescentMode gdMode, int batchSize, Regularization reg) {
         List<Function> functions = new ArrayList<>();
         for (int i = 0; i < y.size(); i++) {
-            functions.add(new Pow(new Subtract(new Const(y.get(i)), new Add(new Multiply(new Variable("a"),
-                    new Const(x.get(i))), new Variable("b"))), new Const(2.0)));
+            List<Function> sum = new ArrayList<>();
+            for (int j = 0; j <= n; j++) {
+                sum.add(new Multiply(new Variable("a" + j), new Pow(new Const(x.get(i)), new Const(j))));
+            }
+            functions.add(new Add(new Pow(new Subtract(new Sum(sum), new Const(y.get(i))), new Const(2.0)),
+                    getRegularization(n, reg)));
         }
         Sum function = new Sum(functions);
         var res = switch (gdMode) {
@@ -334,8 +347,31 @@ public class Minimization2 {
             case ADAM -> adamGradientDescent(function, batchSize);
             case ADAPTIVE -> adaptiveGradientDescent(function, batchSize);
         };
-        double a = res.get(res.size() - 1).get("a");
-        double b = res.get(res.size() - 1).get("b");
-        return new double[]{a, b};
+        return res.get(res.size() - 1);
+    }
+
+    private static Function getRegularization(int n, Regularization reg) {
+        return switch (reg) {
+            case L2 -> L2(n);
+            case L1 -> L1(n);
+            case ELASTIC -> new Add(L1(n), L2(n));
+            case DEFAULT -> new Const(0);
+        };
+    }
+
+    private static Function L2(int n) {
+        List<Function> sum = new ArrayList<>();
+        for (int i = 0; i <= n; i++) {
+            sum.add(new Pow(new Variable("a" + i), new Const(2.0)));
+        }
+        return new Multiply(new Const(L2_ALPHA), new Sum(sum));
+    }
+
+    private static Function L1(int n) {
+        List<Function> sum = new ArrayList<>();
+        for (int i = 0; i <= n; i++) {
+            sum.add(new Sqrt(new Pow(new Variable("a" + i), new Const(2.0))));
+        }
+        return new Multiply(new Const(L1_ALPHA), new Sum(sum));
     }
 }
