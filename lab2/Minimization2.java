@@ -8,14 +8,12 @@ import java.util.*;
 import static lab1.Minimization1.getBestAlpha;
 
 public class Minimization2 {
-    public static final double EPS = 1e-7;
+    public static final double EPS = 1e-3;
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
     private static final double GAMMA = 0.99;
     private static final double BETA1 = 0.9;
-    private static final double BETA2 = 0.999;
-    private static final double L1_ALPHA = 0.5;
-    private static final double L2_ALPHA = 0.5;
+    private static final double BETA2 = 0.99;
 
     public static List<Map<String, Double>> gradientDescent(MultipleArgumentFunction function, int batchSize) {
         return abstractGD(function, batchSize, 1, Minimization2::gdOneTime);
@@ -53,17 +51,21 @@ public class Minimization2 {
             }
         }
         int epoch = (int) Math.ceil((double) function.getFunctions().size() / batchSize);
+        int epochs = 0;
         while (countIterations < MAX_COUNT_OF_ITERATIONS) {
             double maxDiff = 0;
             for (int i = 0; i < epoch; i++) {
                 maxDiff = Math.max(maxDiff, adaptiveOneTime(function, batchSize, variables, res, vector, countIterations + i, G));
             }
             countIterations += epoch;
+            epochs++;
             if (maxDiff <= EPS) {
                 break;
             }
         }
-        System.out.println((System.nanoTime() - start) / 1e6 + " ms");
+        System.out.println(epochs);
+//        System.out.println(res.get(res.size() - 1));
+//        System.out.println((System.nanoTime() - start) / 1e6 + " ms");
         return res;
     }
 
@@ -74,7 +76,9 @@ public class Minimization2 {
             List<Map<String, Double>> vectors,
             int countIterations,
             List<Map<String, Double>> res) {
-        final double ALPHA = 0.001;
+//        final double ALPHA = 0.001;
+        var initial = 0.2;
+        double ALPHA = stepDecay(countIterations * batchSize / function.getFunctions().size(), initial, 0.5, 15);
 
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
@@ -112,7 +116,9 @@ public class Minimization2 {
             int countIterations,
             Map<String, Map<String, Double>> G
     ) {
-        final double ALPHA = 0.001;
+//        final double ALPHA = 0.001;
+        var initial = 0.85;
+        double ALPHA = stepDecay(countIterations * batchSize / function.getFunctions().size(), initial, 0.5, 10);
         var gradient = getGradientWithRespectToBatchSize(function, batchSize, variables, vector, countIterations);
         for (var v : variables) {
             for (var u : variables) {
@@ -147,12 +153,12 @@ public class Minimization2 {
                 countIterations);
 
 
-//        final double initial = 0.5;
-//        double alpha = stepDecay(countIterations, initial, 0.25, 3);
+//        final double initial = 0.2;
+//        double alpha = 0.041;
+//        double alpha = stepDecay(countIterations, initial, 0.5, 10);
         double alpha = getBestAlpha(function, vector, gradient, false);
 
-        double maxDiff = getMaxDiffAndChangeVector(
-                vector, gradient, alpha);
+        double maxDiff = getMaxDiffAndChangeVector(vector, gradient, alpha);
         res.add(Map.copyOf(vector));
         return maxDiff;
     }
@@ -179,10 +185,14 @@ public class Minimization2 {
             int countIterations,
             List<Map<String, Double>> res
     ) {
-        final double ALPHA = 0.001;
+//        final double ALPHA = 0.001;
 
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
+//        var initial = 0.14;
+//        double ALPHA = stepDecay(countIterations, initial, 0.45, 10);
+        var initial = 0.05;
+        double ALPHA = stepDecay(countIterations * batchSize / function.getFunctions().size(), initial, 0.5, 15);
         Map<String, Double> gradient = getGradientWithRespectToBatchSize(
                 function,
                 batchSize,
@@ -206,7 +216,9 @@ public class Minimization2 {
             int countIterations,
             List<Map<String, Double>> res
     ) {
-        final double ALPHA = 0.001;
+//        final double ALPHA = 0.01;
+        var initial = 0.05;
+        double ALPHA = stepDecay(countIterations * batchSize / function.getFunctions().size(), initial, 0.5, 15);
 
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
@@ -232,7 +244,9 @@ public class Minimization2 {
             int countIterations,
             List<Map<String, Double>> res
     ) {
-        final double ALPHA = 0.001;
+//        final double ALPHA = 0.001;
+        var initial = 0.2;
+        double ALPHA = stepDecay(countIterations * batchSize / function.getFunctions().size(), initial, 0.5, 10);
 
         var vectorX = vectors.get(0);
         var vectorV = vectors.get(1);
@@ -275,6 +289,7 @@ public class Minimization2 {
         }
         res.add(Map.copyOf(vectors.get(0)));
         int countIterations = 0;
+        int epochs = 0;
         int epoch = (int) Math.ceil((double) function.getFunctions().size() / batchSize);
         while (countIterations < MAX_COUNT_OF_ITERATIONS) {
             double maxDiff = 0;
@@ -282,13 +297,16 @@ public class Minimization2 {
                 maxDiff = Math.max(maxDiff, oneIterFunction.apply(function, batchSize, variables, vectors, countIterations + i, res));
             }
             countIterations += epoch;
+            epochs++;
             if (maxDiff <= EPS) {
                 break;
             }
         }
-        System.out.print(countIterations + " ");
-        System.out.println((System.nanoTime() - start) / 1000000);
-        System.out.println(res.get(res.size() - 1));
+//        System.out.println(countIterations / batchSize);
+        System.out.println(epochs);
+//        System.out.println(countIterations);
+//        System.out.println((System.nanoTime() - start) / 1000000);
+//        System.out.println(res.get(res.size() - 1));
         return res;
     }
 
@@ -317,26 +335,17 @@ public class Minimization2 {
         return gradient;
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static double stepDecay(int iterNum, double initial, double d, int r) {
+        //noinspection IntegerDivisionInFloatingPointContext
         return initial * Math.pow(d, 1 + (iterNum) / r);
     }
 
-    public static Map<String, Double> linearRegression(List<Double> x, List<Double> y,
-                                                       GradientDescentMode gdMode, int batchSize) {
-        return polynomialRegression(x, y, 1, gdMode, batchSize, Regularization.DEFAULT);
-    }
-
-    //a_0 + a_1x + a_2x^2 + ... + a_nx^n
-    public static Map<String, Double> polynomialRegression(List<Double> x, List<Double> y, int n,
-                                                           GradientDescentMode gdMode, int batchSize, Regularization reg) {
+    public static double[] linearRegression(List<Double> x, List<Double> y, GradientDescentMode gdMode, int batchSize) {
         List<Function> functions = new ArrayList<>();
         for (int i = 0; i < y.size(); i++) {
-            List<Function> sum = new ArrayList<>();
-            for (int j = 0; j <= n; j++) {
-                sum.add(new Multiply(new Variable("a" + j), new Pow(new Const(x.get(i)), new Const(j))));
-            }
-            functions.add(new Add(new Pow(new Subtract(new Sum(sum), new Const(y.get(i))), new Const(2.0)),
-                    getRegularization(n, reg)));
+            functions.add(new Pow(new Subtract(new Const(y.get(i)), new Add(new Multiply(new Variable("a"),
+                    new Const(x.get(i))), new Variable("b"))), new Const(2.0)));
         }
         Sum function = new Sum(functions);
         var res = switch (gdMode) {
@@ -347,31 +356,8 @@ public class Minimization2 {
             case ADAM -> adamGradientDescent(function, batchSize);
             case ADAPTIVE -> adaptiveGradientDescent(function, batchSize);
         };
-        return res.get(res.size() - 1);
-    }
-
-    private static Function getRegularization(int n, Regularization reg) {
-        return switch (reg) {
-            case L2 -> L2(n);
-            case L1 -> L1(n);
-            case ELASTIC -> new Add(L1(n), L2(n));
-            case DEFAULT -> new Const(0);
-        };
-    }
-
-    private static Function L2(int n) {
-        List<Function> sum = new ArrayList<>();
-        for (int i = 0; i <= n; i++) {
-            sum.add(new Pow(new Variable("a" + i), new Const(2.0)));
-        }
-        return new Multiply(new Const(L2_ALPHA), new Sum(sum));
-    }
-
-    private static Function L1(int n) {
-        List<Function> sum = new ArrayList<>();
-        for (int i = 0; i <= n; i++) {
-            sum.add(new Sqrt(new Pow(new Variable("a" + i), new Const(2.0))));
-        }
-        return new Multiply(new Const(L1_ALPHA), new Sum(sum));
+        double a = res.get(res.size() - 1).get("a");
+        double b = res.get(res.size() - 1).get("b");
+        return new double[]{a, b};
     }
 }

@@ -14,4 +14,12 @@ public class Matrix {
     public int size() {
         return matrix.length;
     }
+
+    public double[] getNthRow(int n) {
+        return getMatrix()[n];
+    }
+
+    public double get(int i, int j) {
+        return getMatrix()[i][j];
+    }
 }
