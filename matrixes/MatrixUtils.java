@@ -1,8 +1,7 @@
 package matrixes;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.function.DoubleBinaryOperator;
 
 public class MatrixUtils {
     public static Matrix multiply(Matrix a, Matrix b) {
@@ -43,10 +42,7 @@ public class MatrixUtils {
     }
 
     public static Matrix generateMatrix(int n) {
-        double[][] matrix = new double[n][n];
-        for (int i = 0; i < n; i++) {
-            matrix[i][i] = 1;
-        }
+        double[][] matrix = eye(n).getMatrix();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 double[] temp = matrix[j];
@@ -114,5 +110,51 @@ public class MatrixUtils {
             res[i] = (scalar / norma) * u[i];
         }
         return res;
+    }
+
+    public static Matrix eye(int dim) {
+        double[][] arr = new double[dim][dim];
+        for (int i = 0; i < dim; i++) {
+            arr[i][i] = 1;
+        }
+        return new Matrix(arr);
+    }
+
+    // Suppose all variables in vector has name "x{$i}"
+    public static Map<String, Double> multByVector(Matrix matrix, Map<String, Double> vector) {
+        int matrixDim = matrix.size();
+        Map<String, Double> res = new HashMap<>();
+        for (int i = 0; i < matrixDim; i++) {
+            res.put("x" + i, scalarProduct(matrix.getNthRow(i), vector));
+        }
+        return res;
+    }
+
+    private static double scalarProduct(double[] row, Map<String, Double> vector) {
+        DimensionException.assertCorrectDimensions(row.length, vector.size());
+        double res = 0;
+        for (int i = 0; i < row.length; i++) {
+            res += row[i] * vector.get("x" + i);
+        }
+        return res;
+    }
+
+    private static Matrix biMatrixOperation(Matrix m1, Matrix m2, DoubleBinaryOperator f) {
+        DimensionException.assertCorrectDimensions(m1.size(), m2.size());
+        double[][] res = new double[m1.size()][m2.size()];
+        for (int i = 0; i < m1.size(); i++) {
+            for (int j = 0; j < m2.size(); j++) {
+                res[i][j] = f.applyAsDouble(m1.get(i, j), m2.get(i, j));
+            }
+        }
+        return new Matrix(res);
+    }
+
+    public static Matrix subtract(Matrix m1, Matrix m2) {
+        return biMatrixOperation(m1, m2, (a, b) -> a - b);
+    }
+
+    public static Matrix add(Matrix m1, Matrix m2) {
+        return biMatrixOperation(m1, m2, Double::sum);
     }
 }
