@@ -157,4 +157,14 @@ public class MatrixUtils {
     public static Matrix add(Matrix m1, Matrix m2) {
         return biMatrixOperation(m1, m2, Double::sum);
     }
+
+    public static Matrix multiply(Matrix m, double x) {
+        double[][] res = new double[m.size()][m.size()];
+        for (int i = 0; i < m.size(); i++) {
+            for (int j = 0; j < m.size(); j++) {
+                res[i][j] = m.get(i, j) * x;
+            }
+        }
+        return new Matrix(res);
+    }
 }

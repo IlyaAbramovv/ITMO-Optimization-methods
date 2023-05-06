@@ -6,12 +6,12 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        var res = Minimization2.polynomialRegression(List.of(1.0, 2.0, 3.0, 4.0, 10.0),
-                List.of(0.0, 2.0, 4.0, 6.0, 18.0), 1,
-                GradientDescentMode.COMMON,
-                1, Regularization.L1);
-        for (var entry : res.entrySet()) {
-            System.out.println(entry.getKey() + " " + entry.getValue());
+//        var res = Minimization2.polynomialRegression(List.of(1.0, 2.0, 3.0, 4.0, 10.0),
+//                List.of(0.0, 2.0, 4.0, 6.0, 18.0), 1,
+//                GradientDescentMode.COMMON,
+//                1, Regularization.L1);
+//        for (var entry : res.entrySet()) {
+//            System.out.println(entry.getKey() + " " + entry.getValue());
         }
 
 
@@ -35,4 +35,4 @@ public class Main {
 //            Minimization2.gradientDescent(f, i);
 //        }
     }
-}
+//}

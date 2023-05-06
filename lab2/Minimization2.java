@@ -10,7 +10,7 @@ import static lab1.Minimization1.getBestAlpha;
 public class Minimization2 {
     public static final double EPS = 1e-3;
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
-    private static final double INITIAL_VALUE = 2.0;
+    private static final double INITIAL_VALUE = 1.0;
     private static final double GAMMA = 0.99;
     private static final double BETA1 = 0.9;
     private static final double BETA2 = 0.99;
@@ -270,7 +270,7 @@ public class Minimization2 {
         return maxDiff;
     }
 
-    private static Map<String, Double> initializeVector(Set<String> variables) {
+    static Map<String, Double> initializeVector(Set<String> variables) {
         Map<String, Double> vector = new HashMap<>(variables.size());
         for (String variable : variables) {
             vector.put(variable, INITIAL_VALUE);
