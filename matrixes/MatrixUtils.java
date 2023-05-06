@@ -1,24 +1,11 @@
 package matrixes;
 
+import functions.Function;
+
 import java.util.*;
 import java.util.function.DoubleBinaryOperator;
 
 public class MatrixUtils {
-    public static Matrix multiply(Matrix a, Matrix b) {
-        int n = a.size();
-        double[][] res = new double[n][n];
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                double sum = 0;
-                for (int k = 0; k < n; k++) {
-                    sum += a.getMatrix()[i][k] * b.getMatrix()[k][j];
-                }
-                res[i][j] = sum;
-            }
-        }
-        return new Matrix(res);
-    }
-
     public static Matrix generateMatrix(int n, int k) {
         Matrix a = generateOrthogonalMatrix(n);
         double[][] matrixb = new double[n][n];
@@ -56,17 +43,6 @@ public class MatrixUtils {
                 for (int k = 0; k < n; k++) {
                     matrix[i][k] += temp[k];
                 }
-            }
-        }
-        return new Matrix(matrix);
-    }
-
-    public static Matrix transpose(Matrix a) {
-        int n = a.size();
-        double[][] matrix = new double[n][n];
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                matrix[j][i] = a.getMatrix()[i][j];
             }
         }
         return new Matrix(matrix);
@@ -156,5 +132,108 @@ public class MatrixUtils {
 
     public static Matrix add(Matrix m1, Matrix m2) {
         return biMatrixOperation(m1, m2, Double::sum);
+    }
+
+    public static FunctionalMatrix jacobian(List<Function> functions, Set<String> variables) {
+        Function[][] res = new Function[functions.size()][variables.size()];
+        for (int i = 0; i < functions.size(); i++) {
+            for (int j = 0; j < variables.size(); j++) {
+                res[i][j] = functions.get(i).differentiate("x" + j);
+            }
+        }
+        return new FunctionalMatrix(res);
+    }
+
+    public static Matrix evaluate(FunctionalMatrix m, Map<String, Double> vector) {
+        Function[][] matrix = m.getMatrix();
+        double[][] res = new double[matrix.length][matrix[0].length];
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
+                res[i][j] = matrix[i][j].evaluate(vector);
+            }
+        }
+        return new Matrix(res);
+    }
+
+    public static Matrix inverse(Matrix a) {
+        double temp;
+        int n = a.size();
+        double[][] matrix = new double[n][2 * n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                matrix[i][j] = a.getMatrix()[i][j];
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < 2 * n; j++) {
+                if (j == (i + n)) {
+                    matrix[i][j] = 1;
+                }
+            }
+        }
+        for (int i = n - 1; i > 0; i--) {
+            if (matrix[i - 1][0] < matrix[i][0]) {
+                double[] tempArr = matrix[i];
+                matrix[i] = matrix[i - 1];
+                matrix[i - 1] = tempArr;
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (j != i) {
+                    temp = matrix[j][i] / matrix[i][i];
+                    for (int k = 0; k < 2 * n; k++) {
+                        matrix[j][k] -= matrix[i][k] * temp;
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            temp = matrix[i][i];
+            for (int j = 0; j < 2 * n; j++) {
+                matrix[i][j] = matrix[i][j] / temp;
+            }
+        }
+        double[][] res = new double[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = n; j < 2 * n; j++) {
+                res[i][j - n] = matrix[i][j];
+            }
+        }
+        return new Matrix(res);
+    }
+
+
+    public static Matrix transpose(Matrix m) {
+        double[][] matrix = m.getMatrix();
+        int rows = matrix.length;
+        int columns = matrix[0].length;
+        double[][] transpose = new double[columns][rows];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                transpose[j][i] = matrix[i][j];
+            }
+        }
+        return new Matrix(transpose);
+    }
+
+    public static Matrix multiply(Matrix m1, Matrix m2) {
+        double[][] A = m1.getMatrix();
+        double[][] B = m2.getMatrix();
+        int m = A.length;
+        int n = A[0].length;
+        int p = B[0].length;
+        double[][] C = new double[m][p];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < p; j++) {
+                double sum = 0;
+                for (int k = 0; k < n; k++) {
+                    sum += A[i][k] * B[k][j];
+                }
+                C[i][j] = sum;
+            }
+        }
+        return new Matrix(C);
     }
 }

@@ -1,8 +1,5 @@
 package matrixes;
 
-import java.io.StringWriter;
-import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 

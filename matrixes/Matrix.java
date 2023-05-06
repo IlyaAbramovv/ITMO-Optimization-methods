@@ -22,4 +22,16 @@ public class Matrix {
     public double get(int i, int j) {
         return getMatrix()[i][j];
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < size(); i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
+                sb.append(matrix[i][j] + " ");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
 }
