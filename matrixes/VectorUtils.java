@@ -1,5 +1,6 @@
 package matrixes;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -52,5 +53,9 @@ public class VectorUtils {
             }
         }
         return new Matrix(res);
+    }
+
+    public static double getNorm(Map<String, Double> vec) {
+        return vec.entrySet().stream().max(Comparator.comparing(e -> Math.abs(e.getValue()))).orElseThrow().getValue();
     }
 }
