@@ -4,19 +4,19 @@ import functions.*;
 import matrixes.FunctionalMatrix;
 import matrixes.Matrix;
 import matrixes.MatrixUtils;
+import matrixes.VectorUtils;
 
 import java.util.*;
 
 import static functions.FunctionUtils.getAllVariables;
 import static functions.FunctionUtils.getGradient;
 import static lab1.Minimization1.getBestAlpha;
+import static matrixes.MatrixUtils.multiply;
 import static matrixes.MatrixUtils.*;
-import static matrixes.VectorUtils.*;
 import static matrixes.VectorUtils.add;
 import static matrixes.VectorUtils.multiply;
-import static matrixes.VectorUtils.scalar;
 import static matrixes.VectorUtils.subtract;
-import static matrixes.MatrixUtils.multiply;
+import static matrixes.VectorUtils.*;
 
 public class Minimization3 {
     public static final double EPS = 1e-4;
@@ -24,6 +24,55 @@ public class Minimization3 {
     private static final double INITIAL_VALUE = 2.0;
 
     public static List<Map<String, Double>> gaussNewton(Sum function) {
+        return abstractMethod(function, Method.GAUSS_NEWTON);
+    }
+
+    public static List<Map<String, Double>> powellDogLeg(Sum function, double delta) {
+        return abstractMethod(function, Method.POWELL_DOG_LEG, delta);
+    }
+
+    private static Map<String, Double> getGaussNewtonChange(List<Function> functions,
+                                                            Matrix J,
+                                                            Map<String, Double> vector) {
+        Matrix transposedJ = transpose(J);
+        Map<String, Double> r = new HashMap<>();
+        for (int i = 0; i < functions.size(); i++) {
+            r.put("x" + i, functions.get(i).evaluate(vector));
+        }
+        return multByVector(multiply(inverse(multiply(transposedJ, J)), transposedJ), r);
+    }
+
+    private static Map<String, Double> getPowellDogLegChange(List<Function> functions,
+                                                             Matrix J,
+                                                             Map<String, Double> vector,
+                                                             double delta) {
+        Map<String, Double> gaussNewton = getGaussNewtonChange(functions, J, vector);
+        if (VectorUtils.getNorm(gaussNewton) <= delta) {
+            return gaussNewton;
+        }
+        Map<String, Double> steepestDescent = getSteepestDescentChange(functions, J, vector);
+        double sDNorm = getNorm(steepestDescent);
+        double JSDNorm = getNorm(multByVector(J, steepestDescent));
+        double t = (sDNorm * sDNorm) / (JSDNorm * JSDNorm);
+        if (sDNorm * t > delta) {
+            return VectorUtils.multiply(steepestDescent, delta / sDNorm);
+        }
+        var add = VectorUtils.add(VectorUtils.multiply(steepestDescent, t), gaussNewton);
+        return VectorUtils.multiply(add, delta / getNorm(add));
+    }
+
+    private static Map<String, Double> getSteepestDescentChange(List<Function> functions,
+                                                                Matrix J,
+                                                                Map<String, Double> vector) {
+        Matrix transposedJ = transpose(J);
+        Map<String, Double> r = new HashMap<>();
+        for (int i = 0; i < functions.size(); i++) {
+            r.put("x" + i, functions.get(i).evaluate(vector));
+        }
+        return multByVector(transposedJ, r);
+    }
+
+    private static List<Map<String, Double>> abstractMethod(Sum function, Method method, double... args) {
         long start = System.nanoTime();
         final Set<String> variables = FunctionUtils.getAllVariables(function);
         final List<Map<String, Double>> res = new ArrayList<>();
@@ -32,9 +81,20 @@ public class Minimization3 {
         int countIterations = 0;
         FunctionalMatrix jacobian = jacobian(function.getFunctions(), variables);
         while (countIterations < MAX_COUNT_OF_ITERATIONS) {
+            if (countIterations == 50) {
+                System.out.println();
+            }
             double maxDiff = 0;
             Matrix J = evaluate(jacobian, vector);
-            maxDiff = Math.max(maxDiff, gaussNewtonIteration(function.getFunctions(), J, vector, res));
+            Map<String, Double> direction;
+            if (method == Method.GAUSS_NEWTON) {
+                direction = getGaussNewtonChange(function.getFunctions(), J, vector);
+            } else {
+                direction = getPowellDogLegChange(function.getFunctions(), J, vector, args[0]);
+            }
+            double diff = getMaxDiffAndChangeVector(vector, direction);
+            maxDiff = Math.max(maxDiff, diff);
+            res.add(vector);
             countIterations++;
             if (maxDiff <= EPS) {
                 break;
@@ -44,21 +104,6 @@ public class Minimization3 {
         System.out.println((System.nanoTime() - start) / 1000000);
         System.out.println(res.get(res.size() - 1));
         return res;
-    }
-
-    private static double gaussNewtonIteration(List<Function> functions,
-                                               Matrix J,
-                                               Map<String, Double> vector,
-                                               List<Map<String, Double>> res) {
-        Matrix transposedJ = transpose(J);
-        Map<String, Double> r = new HashMap<>();
-        for (int i = 0; i < functions.size(); i++) {
-            r.put("x" + i, functions.get(i).evaluate(vector));
-        }
-        Map<String, Double> direction = multByVector(multiply(inverse(multiply(transposedJ, J)), transposedJ), r);
-        double maxDiff = getMaxDiffAndChangeVector(vector, direction);
-        res.add(vector);
-        return maxDiff;
     }
 
     private static double getMaxDiffAndChangeVector(
@@ -81,7 +126,7 @@ public class Minimization3 {
         return vector;
     }
 
-    public static Map<String, Double> polynomialRegression(List<Double> x, List<Double> y, int n) {
+    public static Map<String, Double> polynomialRegression(List<Double> x, List<Double> y, int n, Method method, double... args) {
         List<Function> functions = new ArrayList<>();
         for (int i = 0; i < y.size(); i++) {
             List<Function> sum = new ArrayList<>();
@@ -91,21 +136,27 @@ public class Minimization3 {
             }
             functions.add(new Subtract(new Sum(sum), new Const(y.get(i))));
         }
-        var res = gaussNewton(new Sum(functions));
+        List<Map<String, Double>> res;
+        if (method == Method.GAUSS_NEWTON) {
+            res = gaussNewton(new Sum(functions));
+        } else {
+            res = powellDogLeg(new Sum(functions), args[0]);
+        }
         return res.get(res.size() - 1);
     }
+
     public static Map<String, Double> bfgs(MultipleArgumentFunction function) {
         int k = 0;
         var variables = getAllVariables(function);
         var initial = initializeVector(variables);
         var grad = getGradient(function, initial);
         var oldGrad = grad;
-        Matrix I = MatrixUtils.eye(initial.size());
+        Matrix I = eye(initial.size());
         Matrix Hk = I;
         var x = initial;
         var oldX = x;
 
-        while (getNorm(grad) > EPS && k++ < MAX_COUNT_OF_ITERATIONS) {
+        while (getMaxDiff(grad) > EPS && k++ < MAX_COUNT_OF_ITERATIONS) {
             var pk = negate(multByVector(Hk, grad));
             double alpha = getBestAlpha(function, x, grad, true);
             oldX = x;
@@ -118,7 +169,7 @@ public class Minimization3 {
             double ro = 1.0 / scalar(y, s);
             Matrix A1 = MatrixUtils.subtract(I, toMatrixProduct(multiply(s, ro), y));
             Matrix A2 = MatrixUtils.subtract(I, toMatrixProduct(multiply(y, ro), s));
-            Hk = MatrixUtils.add(MatrixUtils.multiply(A1, multiply(Hk, A2)), toMatrixProduct(multiply(s, ro), s));
+            Hk = MatrixUtils.add(multiply(A1, multiply(Hk, A2)), toMatrixProduct(multiply(s, ro), s));
         }
         return x;
     }
@@ -131,14 +182,14 @@ public class Minimization3 {
         var oldGrad = subtract(grad, grad);
         var x = initial;
         var oldX = x;
-        var I = MatrixUtils.eye(initial.size());
+        var I = eye(initial.size());
 
         Deque<Map<String, Double>> sList = new ArrayDeque<>(m);
         Deque<Map<String, Double>> yList = new ArrayDeque<>(m);
         Deque<Double> rhoList = new ArrayDeque<>(m);
         Deque<Double> alphaList = new ArrayDeque<>(m);
 
-        while (getNorm(grad) > EPS && k++ < MAX_COUNT_OF_ITERATIONS) {
+        while (getMaxDiff(grad) > EPS && k++ < MAX_COUNT_OF_ITERATIONS) {
             var q = grad;
 
             var sIt = sList.iterator();

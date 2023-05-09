@@ -55,7 +55,11 @@ public class VectorUtils {
         return new Matrix(res);
     }
 
+    public static double getMaxDiff(Map<String, Double> vec) {
+        return vec.values().stream().map(Math::abs).max(Double::compare).get();
+    }
+
     public static double getNorm(Map<String, Double> vec) {
-        return vec.entrySet().stream().max(Comparator.comparing(e -> Math.abs(e.getValue()))).orElseThrow().getValue();
+        return Math.sqrt(vec.values().stream().map(val -> val * val).reduce(0.0, Double::sum));
     }
 }
