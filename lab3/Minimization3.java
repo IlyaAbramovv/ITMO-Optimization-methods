@@ -57,8 +57,20 @@ public class Minimization3 {
         if (sDNorm * t > delta) {
             return VectorUtils.multiply(steepestDescent, delta / sDNorm);
         }
-        var add = VectorUtils.add(VectorUtils.multiply(steepestDescent, t), gaussNewton);
-        return VectorUtils.multiply(add, delta / getNorm(add));
+        var sd = VectorUtils.multiply(steepestDescent, t);
+        var x = gaussNewton;
+        double s = findS(gaussNewton, sd, delta);
+        return VectorUtils.add(sd, VectorUtils.multiply(VectorUtils.subtract(x, sd), s));
+    }
+
+    private static double findS(Map<String, Double> gn, Map<String, Double> sd, double delta) {
+        var dif = VectorUtils.subtract(gn, sd);
+        double scalar = VectorUtils.scalar(sd, dif);
+        double y = getNorm(dif);
+        double x = getNorm(sd);
+        double discriminant = 4 * scalar * scalar + 4 * (delta * delta - x * x) * y * y;
+        double s = (-2 * scalar + Math.sqrt(discriminant)) / (2 * y * y);
+        return s;
     }
 
     private static Map<String, Double> getSteepestDescentChange(List<Function> functions,

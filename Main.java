@@ -1,23 +1,22 @@
-import functions.*;
+import functions.Const;
+import functions.Subtract;
+import functions.Sum;
+import functions.Variable;
 import lab2.GradientDescentMode;
 import lab2.Minimization2;
 import lab3.Minimization3;
-import matrixes.VectorUtils;
 
 import java.util.List;
-import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
-
-        System.out.println(VectorUtils.getMaxDiff(Map.of("x0",0.0,"x1",-3.0,"x2",-4.0)));
         Sum sum = new Sum(List.of(
-              new Subtract(new Variable("x0"), new Const(2.0)),
-        new Subtract(new Variable("x1"), new Const(4.0)),
-       new Subtract(new Variable("x2"), new Const(-2.0))
+                new Subtract(new Variable("x0"), new Const(2.0)),
+                new Subtract(new Variable("x1"), new Const(4.0)),
+                new Subtract(new Variable("x2"), new Const(-2.0))
 
         ));
-        var ress = Minimization3.powellDogLeg(sum,2);
+        var ress = Minimization3.powellDogLeg(sum, 2);
         System.out.println(ress);
 
 
