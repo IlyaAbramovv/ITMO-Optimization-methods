@@ -23,12 +23,12 @@ public class Minimization3 {
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
 
-    public static List<Map<String, Double>> gaussNewton(Sum function) {
-        return abstractMethod(function, Method.GAUSS_NEWTON);
+    public static List<Map<String, Double>> gaussNewton(List<Function> functions) {
+        return abstractMethod(functions, Method.GAUSS_NEWTON);
     }
 
-    public static List<Map<String, Double>> powellDogLeg(Sum function, double delta) {
-        return abstractMethod(function, Method.POWELL_DOG_LEG, delta);
+    public static List<Map<String, Double>> powellDogLeg(List<Function> functions, double delta) {
+        return abstractMethod(functions, Method.POWELL_DOG_LEG, delta);
     }
 
     private static Map<String, Double> getGaussNewtonChange(List<Function> functions,
@@ -84,14 +84,14 @@ public class Minimization3 {
         return multByVector(transposedJ, r);
     }
 
-    private static List<Map<String, Double>> abstractMethod(Sum function, Method method, double... args) {
+    private static List<Map<String, Double>> abstractMethod(List<Function> functions, Method method, double... args) {
         long start = System.nanoTime();
-        final Set<String> variables = FunctionUtils.getAllVariables(function);
+        final Set<String> variables = FunctionUtils.getAllVariables(new Sum(functions));
         final List<Map<String, Double>> res = new ArrayList<>();
         Map<String, Double> vector = initializeVector(variables);
         res.add(Map.copyOf(vector));
         int countIterations = 0;
-        FunctionalMatrix jacobian = jacobian(function.getFunctions(), variables);
+        FunctionalMatrix jacobian = jacobian(functions, variables);
         while (countIterations < MAX_COUNT_OF_ITERATIONS) {
             if (countIterations == 50) {
                 System.out.println();
@@ -100,9 +100,9 @@ public class Minimization3 {
             Matrix J = evaluate(jacobian, vector);
             Map<String, Double> direction;
             if (method == Method.GAUSS_NEWTON) {
-                direction = getGaussNewtonChange(function.getFunctions(), J, vector);
+                direction = getGaussNewtonChange(functions, J, vector);
             } else {
-                direction = getPowellDogLegChange(function.getFunctions(), J, vector, args[0]);
+                direction = getPowellDogLegChange(functions, J, vector, args[0]);
             }
             double diff = getMaxDiffAndChangeVector(vector, direction);
             maxDiff = Math.max(maxDiff, diff);
@@ -146,15 +146,15 @@ public class Minimization3 {
             for (int j = 1; j <= n; j++) {
                 sum.add(new Multiply(new Variable("x" + j), new Pow(new Const(x.get(i)), new Const(j))));
             }
-            functions.add(new Subtract(new Sum(sum), new Const(y.get(i))));
+            functions.add(new Pow(new Subtract(new Sum(sum), new Const(y.get(i))), new Const(2.0)));
         }
-        List<Map<String, Double>> res;
-        if (method == Method.GAUSS_NEWTON) {
-            res = gaussNewton(new Sum(functions));
-        } else {
-            res = powellDogLeg(new Sum(functions), args[0]);
-        }
-        return res.get(res.size() - 1);
+        Map<String, Double> res = bfgs(new Sum(functions));
+        return res;
+//        if (method == Method.GAUSS_NEWTON) {
+//            res = gaussNewton(new Sum(functions));
+//        } else {
+//            res = powellDogLeg(new Sum(functions), args[0]);
+//        }
     }
 
     public static Map<String, Double> bfgs(MultipleArgumentFunction function) {
