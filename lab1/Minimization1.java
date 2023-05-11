@@ -9,10 +9,10 @@ public class Minimization1 {
     public static final double EPS = 1e-7;
     private static final int MAX_COUNT_OF_ITERATIONS = 10000;
     private static final double INITIAL_VALUE = 2.0;
-    private static final double PHI = (1 + Math.sqrt(5)) / 2;
+    public static final double PHI = (1 + Math.sqrt(5)) / 2;
     private static final double ALPHA = 0.32;
-    private static final double C1 = 1e-3;
-    private static final double C2 = 1 - 1e-3;
+    private static final double C1 = 1e-4;
+    private static final double C2 = 0.9;
 
     private static int countOfGradientCountings, countOfEvaluations;
 
@@ -33,9 +33,9 @@ public class Minimization1 {
             countOfEvaluations += gradient.size();
             double alpha = ALPHA;
             if (mode == Mode.GOLDEN_RATIO) {
-                alpha = getBestAlpha(function, vector, gradient, false);
+                alpha = getBestAlpha(function, vector, gradient, false, gradient);
             } else if (mode == Mode.WOLFE_CONDITIONS) {
-                alpha = getBestAlpha(function, vector, gradient, true);
+                alpha = getBestAlpha(function, vector, gradient, true, gradient);
             }
             double maxDiff = 0;
             for (var entry : gradient.entrySet()) {
@@ -69,20 +69,19 @@ public class Minimization1 {
     }
 
     public static double getBestAlpha(Function function, Map<String, Double> vector,
-                                      Map<String, Double> gradient, boolean checkWolfesConditions) {
+                                      Map<String, Double> gradient, boolean checkWolfesConditions, Map<String, Double> searchDirection) {
         double b = 1, a = 0;
-        while (b - a > EPS) {
+        while (b - a > 1e-9) {
             double x1 = b - (b - a) / PHI, x2 = a + (b - a) / PHI;
             var vector1 = new HashMap<>(vector);
-            vector1.replaceAll((k, v) -> v - x1 * gradient.get(k));
+            vector1.replaceAll((k, v) -> v + x1 * searchDirection.get(k));
             var vector2 = new HashMap<>(vector);
-            vector2.replaceAll((k, v) -> v - x2 * gradient.get(k));
+            vector2.replaceAll((k, v) -> v + x2 * searchDirection.get(k));
             double y1 = function.evaluate(vector1), y2 = function.evaluate(vector2);
-            countOfEvaluations += 2;
             if (checkWolfesConditions) {
-                if (checkWolfesConditions(function, vector, gradient, x1)) {
+                if (checkWolfesConditions(function, vector, gradient, x1, searchDirection)) {
                     return x1;
-                } else if (checkWolfesConditions(function, vector, gradient, x2)) {
+                } else if (checkWolfesConditions(function, vector, gradient, x2, searchDirection)) {
                     return x2;
                 }
             }
@@ -95,15 +94,22 @@ public class Minimization1 {
         return (a + b) / 2;
     }
 
-    private static boolean checkWolfesConditions(Function function, Map<String, Double> vector, Map<String, Double> gradient, double alpha) {
+    private static boolean checkWolfesConditions(Function function, Map<String, Double> vector, Map<String, Double> gradient, double alpha, Map<String, Double> searchDirection) {
         var vector1 = new HashMap<>(vector);
-        vector1.replaceAll((k, v) -> v - alpha * gradient.get(k));
+        vector1.replaceAll((k, v) -> v + alpha * searchDirection.get(k));
+
+        List<Map.Entry<Double, Double>> zipped = new ArrayList<>();
+        for (int i = 0; i < gradient.size(); i++) {
+            zipped.add(Map.entry(gradient.get("x" + i), searchDirection.get("x" + i)));
+        }
+
         boolean first = function.evaluate(vector1) <= function.evaluate(vector) + C1 * alpha *
-                gradient.values().stream().map(val -> -val * val).reduce(0.0, Double::sum);
+                zipped.stream().mapToDouble(a -> a.getKey() * a.getValue()).sum();
+
         var gradient1 = FunctionUtils.getGradient(function, vector1);
-        boolean second = gradient1.entrySet().stream().map(entry ->
-                -entry.getValue() * gradient.get(entry.getKey())).reduce(0.0, Double::sum)
-                >= C2 * gradient.values().stream().map(val -> -val * val).reduce(0.0, Double::sum);
+        boolean second = gradient1.entrySet().stream().mapToDouble(entry ->
+                entry.getValue() * searchDirection.get(entry.getKey())).sum()
+                >= C2 * zipped.stream().mapToDouble(a -> a.getKey() * a.getValue()).sum();
         return first && second;
     }
 }

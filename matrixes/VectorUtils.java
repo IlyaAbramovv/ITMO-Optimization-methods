@@ -56,7 +56,7 @@ public class VectorUtils {
     }
 
     public static double getMaxDiff(Map<String, Double> vec) {
-        return vec.values().stream().map(Math::abs).max(Double::compare).get();
+        return Math.abs(vec.values().stream().map(Math::abs).max(Double::compare).get());
     }
 
     public static double getNorm(Map<String, Double> vec) {

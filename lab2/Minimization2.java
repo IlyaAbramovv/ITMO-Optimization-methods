@@ -149,7 +149,7 @@ public class Minimization2 {
 
 //        final double initial = 0.5;
 //        double alpha = stepDecay(countIterations, initial, 0.25, 3);
-        double alpha = getBestAlpha(function, vector, gradient, false);
+        double alpha = getBestAlpha(function, vector, gradient, false, gradient);
 
         double maxDiff = getMaxDiffAndChangeVector(
                 vector, gradient, alpha);
