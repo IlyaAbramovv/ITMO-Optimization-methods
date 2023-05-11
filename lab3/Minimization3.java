@@ -58,9 +58,8 @@ public class Minimization3 {
             return VectorUtils.multiply(steepestDescent, delta / sDNorm);
         }
         var sd = VectorUtils.multiply(steepestDescent, t);
-        var x = gaussNewton;
         double s = findS(gaussNewton, sd, delta);
-        return VectorUtils.add(sd, VectorUtils.multiply(VectorUtils.subtract(x, sd), s));
+        return VectorUtils.add(sd, VectorUtils.multiply(VectorUtils.subtract(gaussNewton, sd), s));
     }
 
     private static double findS(Map<String, Double> gn, Map<String, Double> sd, double delta) {
