@@ -148,13 +148,15 @@ public class Minimization3 {
             }
             functions.add(new Pow(new Subtract(new Sum(sum), new Const(y.get(i))), new Const(2.0)));
         }
-        Map<String, Double> res = bfgs(new Sum(functions));
-        return res;
-//        if (method == Method.GAUSS_NEWTON) {
-//            res = gaussNewton(new Sum(functions));
-//        } else {
-//            res = powellDogLeg(new Sum(functions), args[0]);
-//        }
+
+        List<Map<String, Double>> res;
+        if (method == Method.GAUSS_NEWTON) {
+            res = gaussNewton(functions);
+        } else {
+            res = powellDogLeg(functions, args[0]);
+        }
+        return res.get(res.size() - 1);
+
     }
 
     public static Map<String, Double> bfgs(MultipleArgumentFunction function) {
@@ -169,8 +171,10 @@ public class Minimization3 {
         var oldX = x;
 
         while (getMaxDiff(grad) > EPS && k++ < MAX_COUNT_OF_ITERATIONS) {
+            System.out.println(k);
+            System.out.println(getMaxDiff(grad));
             var pk = negate(multByVector(Hk, grad));
-            double alpha = getBestAlpha(function, x, grad, true);
+            double alpha = getBestAlpha(function, x, grad, true, pk);
             oldX = x;
             x = add(x, multiply(pk, alpha));
             var s = subtract(x, oldX);
@@ -178,7 +182,7 @@ public class Minimization3 {
             grad = getGradient(function, x);
             var y = subtract(grad, oldGrad);
 
-            double ro = 1.0 / scalar(y, s);
+            double ro = 1.0 / (scalar(y, s) + 1e-9);
             Matrix A1 = MatrixUtils.subtract(I, toMatrixProduct(multiply(s, ro), y));
             Matrix A2 = MatrixUtils.subtract(I, toMatrixProduct(multiply(y, ro), s));
             Hk = MatrixUtils.add(multiply(A1, multiply(Hk, A2)), toMatrixProduct(multiply(s, ro), s));
@@ -194,7 +198,6 @@ public class Minimization3 {
         var oldGrad = subtract(grad, grad);
         var x = initial;
         var oldX = x;
-        var I = eye(initial.size());
 
         Deque<Map<String, Double>> sList = new ArrayDeque<>(m);
         Deque<Map<String, Double>> yList = new ArrayDeque<>(m);
@@ -202,6 +205,7 @@ public class Minimization3 {
         Deque<Double> alphaList = new ArrayDeque<>(m);
 
         while (getMaxDiff(grad) > EPS && k++ < MAX_COUNT_OF_ITERATIONS) {
+            System.out.println(k);
             var q = grad;
 
             var sIt = sList.iterator();
@@ -215,14 +219,11 @@ public class Minimization3 {
                 q = subtract(q, multiply(y, alpha));
             }
 
-            Matrix Hk0;
+            double gamma = 1.0;
             if (k != 1) {
-                double gamma = scalar(sList.getFirst(), yList.getFirst()) / scalar(yList.getFirst(), yList.getFirst());
-                Hk0 = MatrixUtils.multiply(I, gamma);
-            } else {
-                Hk0 = I;
+                gamma = scalar(sList.getFirst(), yList.getFirst()) / (scalar(yList.getFirst(), yList.getFirst()) + 1e-30);
             }
-            var r = multByVector(Hk0, q);
+            var r = multiply(q, gamma);
 
             sIt = sList.descendingIterator();
             yIt = yList.descendingIterator();
@@ -239,13 +240,13 @@ public class Minimization3 {
             if (sList.size() == m) {
                 removeLastElements(sList, yList, rhoList, alphaList);
             }
-            double alpha = getBestAlpha(function, x, grad, true);
+            double alpha = getBestAlpha(function, x, grad, true, negate(r));
             oldX = x;
             x = subtract(x, multiply(r, alpha));
             grad = getGradient(function, x);
             sList.addFirst(subtract(x, oldX));
             yList.addFirst(subtract(grad, oldGrad));
-            rhoList.addFirst(1.0 / scalar(yList.getFirst(), sList.getFirst()));
+            rhoList.addFirst(1.0 / (scalar(yList.getFirst(), sList.getFirst()) + 1e-9));
             alphaList.addFirst(alpha);
             oldGrad = grad;
         }
