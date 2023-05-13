@@ -145,7 +145,7 @@ public class Minimization3 {
             for (int j = 1; j <= n; j++) {
                 sum.add(new Multiply(new Variable("x" + j), new Pow(new Const(x.get(i)), new Const(j))));
             }
-            functions.add(new Pow(new Subtract(new Sum(sum), new Const(y.get(i))), new Const(2.0)));
+            functions.add(new Subtract(new Sum(sum), new Const(y.get(i))));
         }
 
         List<Map<String, Double>> res;
